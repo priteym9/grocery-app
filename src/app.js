@@ -10,11 +10,7 @@ app.use(express.json());
 
 setAllRoutes(app)
 
-app.get('/' , (req , res) => {
-    res.send("hello")
-})
-
 app.listen(port, () => {
     console.log('Server started on port ' + port);
-    console.log(`http://localhost:${port}`);
+    console.log(`http://localhost:${port}/api/v1`);
 });
