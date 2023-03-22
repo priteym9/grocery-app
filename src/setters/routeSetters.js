@@ -13,7 +13,12 @@ router.use('/order' ,   orderRoute);
 router.use('/product' , productRoute);
 
 router.get('/encryption' , (req , res) => {
-    res.send(CryptoJS.AES.encrypt(req.header('id'), process.env.SECRET_KEY).toString());
+    const id = req.header('id');
+    if(id){
+        res.status(200).send(CryptoJS.AES.encrypt(id, process.env.SECRET_KEY).toString());
+    }else{
+        res.status(400).json("Id is required");
+    }
 });
 
 router.get("/" , (req , res) => {
