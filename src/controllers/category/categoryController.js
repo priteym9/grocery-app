@@ -43,8 +43,7 @@ const addCategory = (req, res) => {
 // update category
 const updateCategory = async (req, res) => {
    try{ 
-    const update_id = req.header('id');
-    const id = CryptoJS.AES.decrypt(update_id, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
+    const id = CryptoJS.AES.decrypt(req.header('id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
     const { title, parent_id} = req.body;
 
     if(!id || !title || !parent_id){

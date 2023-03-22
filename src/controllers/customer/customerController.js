@@ -78,8 +78,7 @@ const addCustomer = async (req, res) => {
 // add custmoer address 
 const addCustomerAddress = async (req, res) => {
     
-    const id = req.header('customer_id');
-    const customer_id = CryptoJS.AES.decrypt(id, process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
+    const customer_id = CryptoJS.AES.decrypt(req.header('customer_id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
     console.log(customer_id);
     
     // add validationss on address
