@@ -3,6 +3,7 @@ const Order = db.orders;
 const CryptoJS = require('crypto-js');
 const Customer = db.customers;
 const Addresses = db.addresses;
+const jwt = require('jsonwebtoken');
 
 
 // add custmoer 
@@ -154,9 +155,7 @@ const getCustomerAllOrders = async (req, res) => {
                 message : "Customer not found",
                 result : null
             });
-        }
-
-            
+        }   
      }
      catch(error){
         return res.status(500).json({
@@ -168,8 +167,62 @@ const getCustomerAllOrders = async (req, res) => {
 
 }
 
+// login controller for user 
+
+const login = async (req, res) => {
+    try{
+        const { username, password } = req.body;
+
+        if(!username || !password){
+            return res.status(400).send("All fields are required");
+        }else{
+            const findCustomer = await Customer.findOne({
+                where : {
+                    username : username,
+                } ,
+                attributes : ['id', 'first_name', 'last_name', 'username', 'password']
+            });
+
+            if(!findCustomer){
+                return res.status(400).json({
+                    success : false,
+                    message : "Customer not found",
+                    result : null
+                })
+            }else{
+                const bytes  = CryptoJS.AES.decrypt(findCustomer.password, process.env.SECRET_KEY);
+                const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+                if(originalPassword === password){
+                    const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
+                        expiresIn: 86400 // 24 hours
+                    });
+                    return res.status(200).json({
+                        success : true,
+                        message : "Customer logged in successfully",
+                        data : findCustomer,
+                        token : token
+                    });
+                }else{
+                    return res.status(400).json({
+                        success : false,
+                        message : "Password is incorrect",
+                        data : null
+                    });
+                }
+            }
+        }
+    }catch(err){
+        return res.status(500).json({
+            success : false,
+            message : "Something went wrong",
+            data : err
+        });
+    }
+}
+
 module.exports = {
     addCustomer,
     addCustomerAddress,
-    getCustomerAllOrders
+    getCustomerAllOrders,
+    login
 }
