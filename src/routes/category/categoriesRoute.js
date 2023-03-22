@@ -3,7 +3,7 @@ const categoryController = require("../../controllers/category/categoryControlle
 
 const router = express.Router();
 
-router.get('/' , categoryController.categoryPage)
+
 router.get('/get-all-categories' , categoryController.getAllCategories)
 router.post('/add-category' , categoryController.addCategory)
 router.put('/update-category' , categoryController.updateCategory)
