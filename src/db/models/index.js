@@ -59,9 +59,10 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.catagories = require('./categories')(sequelize, Sequelize);
+db.categories = require('./categories')(sequelize, Sequelize);
 db.products = require('./products')(sequelize, Sequelize);
-db.productCategories = require('./productcategories')(sequelize, Sequelize);
+// db.productCategories = require('./productcategories')(sequelize, Sequelize);
+db.product_categories = require('./product_categories')(sequelize, Sequelize);
 db.customers = require('./customers')(sequelize, Sequelize);
 db.addresses = require('./addresses')(sequelize, Sequelize);
 db.paymentStatusMaster = require('./payment_status_master')(sequelize, Sequelize);
@@ -69,12 +70,21 @@ db.orderStatusMaster = require('./order_status_master')(sequelize, Sequelize);
 db.orders = require('./orders')(sequelize, Sequelize);
 db.orderItems = require('./orderitems')(sequelize, Sequelize);
 
-// associations
-db.catagories.hasMany(db.catagories, { as: 'children', foreignKey: 'parent_id' });
-db.catagories.belongsTo(db.catagories, { as: 'parent', foreignKey: 'parent_id' });
+// associations between models 
+db.categories.hasMany(db.categories, { as: 'children', foreignKey: 'parent_id' });
+db.categories.belongsTo(db.categories, { as: 'parent', foreignKey: 'parent_id' });
 
-db.products.belongsToMany(db.catagories, { through: db.productCategories, foreignKey: 'product_id' });
-db.catagories.belongsToMany(db.products, { through: db.productCategories, foreignKey: 'category_id' });
+
+db.products.hasMany(db.product_categories, { as: 'product_categories', foreignKey: 'product_id' });
+db.product_categories.belongsTo(db.products, { as: 'product', foreignKey: 'product_id' });
+
+db.categories.hasMany(db.product_categories, { as: 'product_categories', foreignKey: 'category_id' });
+db.product_categories.belongsTo(db.categories, { as: 'category', foreignKey: 'category_id' });
+
+
+
+// db.products.belongsToMany(db.categories, { through: db.productCategories, foreignKey: 'product_id' });
+// db.categories.belongsToMany(db.products, { through: db.productCategories, foreignKey: 'category_id' });
 
 db.customers.hasMany(db.addresses, { as: 'addresses', foreignKey: 'customer_id' });
 db.addresses.belongsTo(db.customers, { as: 'customer', foreignKey: 'customer_id' });
@@ -88,7 +98,7 @@ db.orders.belongsTo(db.orderStatusMaster, { as: 'order_status_master', foreignKe
 db.customers.hasMany(db.orders, { as: 'orders', foreignKey: 'customer_id' });
 db.orders.belongsTo(db.customers, { as: 'customer', foreignKey: 'customer_id' });
 
-db.addresses.hasMany(db.orders, { as: 'orders', foreignKey: 'delivery_address_id' });
+db.addresses.hasMany(db.orders, { as: 'orders_', foreignKey: 'delivery_address_id' });
 db.orders.belongsTo(db.addresses, { as: 'delivery_address', foreignKey: 'delivery_address_id' });
 
 db.addresses.hasMany(db.orders, { as: 'orders', foreignKey: 'shipping_address_id' });

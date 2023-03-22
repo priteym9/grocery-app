@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/' , productController.productPage)
 router.get('/get-product-by-id' , productController.getProductById)
-router.get('/get-product-by-category' , productController.getProductByCategory)
+router.get('/get-product-by-category-id' , productController.getProductByCategory)
 router.put('/update-product' , productController.updateProduct)
 router.post('/add-product' , productController.addProduct)
 
