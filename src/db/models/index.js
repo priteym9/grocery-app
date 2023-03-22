@@ -61,6 +61,10 @@ db.Sequelize = Sequelize;
 
 db.categories = require('./categories')(sequelize, Sequelize);
 db.products = require('./products')(sequelize, Sequelize);
+<<<<<<< HEAD
+=======
+// db.productCategories = require('./productcategories')(sequelize, Sequelize);
+>>>>>>> ce54e13e25c54f986d07b5662d9841e197f19f4e
 db.product_categories = require('./product_categories')(sequelize, Sequelize);
 db.customers = require('./customers')(sequelize, Sequelize);
 db.addresses = require('./addresses')(sequelize, Sequelize);
@@ -73,12 +77,21 @@ db.order_items = require('./order_items')(sequelize, Sequelize);
 db.categories.hasMany(db.categories, { as: 'children', foreignKey: 'parent_id' });
 db.categories.belongsTo(db.categories, { as: 'parent', foreignKey: 'parent_id' });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ce54e13e25c54f986d07b5662d9841e197f19f4e
 db.products.hasMany(db.product_categories, { as: 'product_categories', foreignKey: 'product_id' });
 db.product_categories.belongsTo(db.products, { as: 'product', foreignKey: 'product_id' });
 
 db.categories.hasMany(db.product_categories, { as: 'product_categories', foreignKey: 'category_id' });
 db.product_categories.belongsTo(db.categories, { as: 'category', foreignKey: 'category_id' });
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> ce54e13e25c54f986d07b5662d9841e197f19f4e
 // db.products.belongsToMany(db.categories, { through: db.productCategories, foreignKey: 'product_id' });
 // db.categories.belongsToMany(db.products, { through: db.productCategories, foreignKey: 'category_id' });
 

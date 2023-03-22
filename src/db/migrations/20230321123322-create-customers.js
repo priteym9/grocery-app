@@ -64,7 +64,8 @@ module.exports = {
         unique: true,
         validate: {
           isEmail: true
-        }
+        },
+        defaultValue: null
       },
       customer_type: {
         type: Sequelize.INTEGER,

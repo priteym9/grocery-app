@@ -5,8 +5,13 @@
   "main": "./src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
     "start": "node app.js",
     "dev": "nodemon app.js"
+=======
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+>>>>>>> ce54e13e25c54f986d07b5662d9841e197f19f4e
   },
   "author": "",
   "license": "ISC",

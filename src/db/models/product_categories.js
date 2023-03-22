@@ -21,8 +21,11 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'product_categories',
     underscored: true,
+<<<<<<< HEAD
     paranoid: true,
     deletedAt: 'deleted_at',
+=======
+>>>>>>> ce54e13e25c54f986d07b5662d9841e197f19f4e
   });
   return product_categories;
 };
