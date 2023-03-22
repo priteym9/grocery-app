@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('OrderItems', {
+    await queryInterface.createTable('order_items', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -26,7 +26,7 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       product_name: {
-        type: Sequelize.STRING(512),
+        type: Sequelize.STRING,
         allowNull: false,
       },
       qty: {
@@ -54,7 +54,7 @@ module.exports = {
         defaultValue: 0
       },
       deleted_at: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       created_at: {
         allowNull: false,
@@ -65,10 +65,10 @@ module.exports = {
         type: Sequelize.DATE
       }
     },{
-      paranoid: true
+      underscored: true,
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('OrderItems');
+    await queryInterface.dropTable('order_items');
   }
 };
