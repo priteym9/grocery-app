@@ -9,8 +9,6 @@ const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/database.json')[env];
 const db = {};
 
-
-
 // define our database connection using the sequelize object.
 let sequelize = new Sequelize({
   host: config.host,
@@ -20,7 +18,6 @@ let sequelize = new Sequelize({
   database: config.database,
   dialect: config.dialect,
 });
-
 
 // Testing the connection
 sequelize

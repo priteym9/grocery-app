@@ -1,11 +1,7 @@
-
 const db = require('../../db/models/index');
 const CryptoJS = require('crypto-js');
 const { sendError, sendSuccess } = require('../../utils/sendResponse');
 const Categories = db.categories;
-
-
-
 
 // get all categories
 const getAllCategories = async (req, res) => {
@@ -88,9 +84,6 @@ const updateCategory = async (req, res) => {
         return sendError(res, 500, false, "Something went wrong", err);
    }
 }
-
-
-
 
 module.exports = {
     getAllCategories,
