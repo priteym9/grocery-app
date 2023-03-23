@@ -1,6 +1,7 @@
 const db = require('../../db/models/index');
 const Order = db.orders;
 const CryptoJS = require("crypto-js");
+const { sendError, sendSuccess } = require('../../utils/sendResponse');
 const OrderItem = db.order_items;
 
 
@@ -13,12 +14,12 @@ const addOrder = async (req, res) => {
     try {
         // check headers fields are not empty
         if (!customer_id || !delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
-            return res.status(400).json({ success: false, message: "All headers fields are required" });
+            return sendError(res, 400, false, "All headers are required");
         }
 
         // for loop for checking all fields are not empty
         for (let key in req.body) {
-            if (req.body[key] === "") return res.status(400).json({ success: false, message: `${key} is required` });
+            if (req.body[key] === "") return sendError(res, 400, false, `${key} is required`);
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
@@ -33,11 +34,11 @@ const addOrder = async (req, res) => {
             });
             const newOrderItems = await OrderItem.bulkCreate(order_items);
             if (newOrderItems) {
-                return res.status(201).json({ success: true, message: "Order created successfully", data: newOrder });
+                return sendSuccess(res, 201, true, "Order created successfully", newOrder);
             }
         }
     } catch (error) {
-        return res.status(500).json({ success: true, message: "Internal server error", error: error.message });
+        return sendError(res, 500, false, "Something went wrong", error);
     }
 }
 
@@ -46,10 +47,7 @@ const getOrderById = async (req, res) => {
     
     // Get Order full details by Order Id
     if(!req.header('order_id')){
-        return res.status(400).json({
-            success : false,
-            message : "Order Id is required",
-        });
+        return sendError(res, 400, false, "Order Id is required");
     }
     try{
         const order = await Order.findOne({
@@ -58,24 +56,12 @@ const getOrderById = async (req, res) => {
             }
         });
         if(order){
-            return res.status(200).json({
-                success : true,
-                message : "Order fetched successfully",
-                result : order
-            });
+            return sendSuccess(res, 200, true, "Order found", order);
         }else{
-            return res.status(200).json({
-                success : false,
-                message : "Order not found",
-                result : null
-            });
+            return sendError(res, 400, false, "Order not found");
         }
     }catch(error){
-        return res.status(500).json({
-            success : false,
-            message : "Internal Server Error",
-            error : error.message ,
-        });
+        return sendError(res, 500, false, "Something went wrong", error);
     }
 }
 

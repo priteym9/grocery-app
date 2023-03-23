@@ -1,8 +1,11 @@
 const db = require('../../db/models/index');
+const { sendSuccess , sendError } =  require('../../utils/sendResponse');
 const Order = db.orders;
 const CryptoJS = require('crypto-js');
 const Customer = db.customers;
 const Addresses = db.addresses;
+
+
 
 
 // add custmoer 
@@ -13,17 +16,17 @@ const addCustomer = async (req, res) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
         if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
-            return  res.status(400).send("All fields are required");
+            return  sendError(res, 400, false, "All fields are required");
         }else if(primary_mobile_number.length !== 10){
-            return  res.status(400).send("Primary mobile number must be 10 digits");
+            return  sendError(res, 400, false, "Primary mobile number must be 10 digits");
         }else if(!regex.test(primary_email)){
-            return res.status(400).send("Primary email is not valid");
+            return sendError(res, 400, false, "Primary email is not valid");
         }else if(password.length < 8 || password.length > 64){
-            return res.status(400).send("Password must be between 8 and 64 characters");   
+            return sendError(res, 400, false, "Password must be between 8 and 64 characters");   
         }else if(secondary_mobile_number.length !== 10){
-            return res.status(400).send("Secondary mobile number must be 10 digits");
+            return sendError(res, 400, false, "Secondary mobile number must be 10 digits");
         }else if(!regex.test(secondary_email)){
-            return res.status(400).send("Secondary email is not valid");
+            return sendError(res, 400, false, "Secondary email is not valid");
         }else{
 
             const findCustomer = await Customer.findOne({
@@ -35,11 +38,7 @@ const addCustomer = async (req, res) => {
             });
 
             if(findCustomer){
-                return res.status(400).json({
-                    success : false,
-                    message : "Customer already exists",
-                    result : findCustomer
-                })
+                return sendError(res, 400, false, "Customer already exists");
             }else{
                 const customer = await Customer.create({
                     first_name,
@@ -52,19 +51,11 @@ const addCustomer = async (req, res) => {
                     secondary_mobile_number,
                     secondary_email
                 });
-                return res.status(200).json({
-                    success : true,
-                    message : "Customer added successfully",
-                    result : customer
-                });
+                return sendSuccess(res, 200, true, "Customer added successfully", customer);
             }
         }
     }catch(err){
-        return res.status(500).json({
-            success : false,
-            message : "Something went wrong",
-            result : err.errors[0].message
-        });
+        return sendError(res, 500, false, "Something went wrong", err)
     }
 }
 
@@ -80,9 +71,9 @@ const addCustomerAddress = async (req, res) => {
         const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark } = req.body;
 
         if(!customer_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
-            return res.status(400).send("All fields are required");
+            return sendError(res, 400, false, "All fields are required");
         }else if(postal_code.length !== 6){
-            return res.status(400).send("Postal code must be 6 digits");
+            return sendError(res, 400, false, "Postal code must be 6 digits");
         }else {
             const findCustomer = await Customer.findOne({
                 where : {
@@ -91,11 +82,7 @@ const addCustomerAddress = async (req, res) => {
             });
 
             if(!findCustomer){
-                return res.status(400).json({
-                    success : false,
-                    message : "Customer not found",
-                    result : null
-                })
+                return sendError(res, 400, false, "Customer not found");
             }else{
                 const address = await Addresses.create({
                     customer_id,
@@ -108,15 +95,11 @@ const addCustomerAddress = async (req, res) => {
                     postal_code,
                     landmark
                 });
-                res.status(200).json({
-                    success : true,
-                    message : "Address added successfully",
-                    result : address
-                });
+                return sendSuccess(res, 200, true, "Address added successfully", address);
             }
         }
     }catch(err){
-        res.status(500).send(err);
+        return sendError(res, 500, false, "Something went wrong", err)
     }
 }
 
@@ -124,10 +107,7 @@ const addCustomerAddress = async (req, res) => {
 const getCustomerAllOrders = async (req, res) => {
     // Get Customer's all orders by Customer Id
     if(!req.header('customer_id')){
-        return res.status(400).json({
-            success : false,
-            message : "Customer Id is required",
-        });
+        return sendError(res, 400,  false  , "Customer Id is required");
     }
     try{
          // Get Customer's all orders by Customer Id using sequelize
@@ -143,27 +123,15 @@ const getCustomerAllOrders = async (req, res) => {
             ]
         });
         if(customer){
-            return res.status(200).json({
-                success : true,
-                message : "Customer's all orders fetched successfully",
-                result : customer
-            });
+            return sendSuccess(res, 200, true, "Customer's all orders", customer); 
         }else{
-            return res.status(200).json({
-                success : false,
-                message : "Customer not found",
-                result : null
-            });
+            return sendError(res, 400, false, "Customer not found in database");
         }
 
             
      }
      catch(error){
-        return res.status(500).json({
-            success : false,
-            message : "Internal Server Error",
-            error : error.message ,
-        });
+        return sendError(res, 500, false, "Something went wrong", error);
     }
 
 }

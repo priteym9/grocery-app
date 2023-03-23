@@ -1,6 +1,7 @@
 
 const db = require('../../db/models/index');
 const CryptoJS = require('crypto-js');
+const { sendError, sendSuccess } = require('../../utils/sendResponse');
 const Categories = db.categories;
 
 
@@ -13,25 +14,13 @@ const getAllCategories = async (req, res) => {
             attributes : ['id', 'title', 'parent_id']
         });
         if(allCategories.length === 0){
-            return res.status(200).json({
-                success : true,
-                message : "No categories found",
-                result : allCategories
-            });
+            return sendError(res, 400, false, "No categories found")
         }else{
-            return res.status(200).json({
-                success : true,
-                message : "All categories",
-                result : allCategories
-            });
+            return sendSuccess(res, 200, true, "Categories found", allCategories)
         }
 
     }catch(err){
-        return res.status(500).json({
-            success : false,
-            message : "Something went wrong",
-            result : err
-        });
+        return sendError(res, 500, false, "Something went wrong", err)
     }
 }
 
@@ -40,28 +29,28 @@ const getAllCategories = async (req, res) => {
 const addCategory = async (req, res) => {
     let { title, parent_id } = req.body;
     try {
-        if (!title) return res.status(400).json({ success: false, message: "Title is required" });
-        if (!parent_id) return res.status(400).json({ success: false, message: "Parent category is required" });
+        if (!title) return sendError(res, 400, false, "Category title is required");
+        if (!parent_id) return sendError(res, 400, false, "Parent category is required");
         // check if parent_id is a number
-        if (isNaN(parent_id)) return res.status(400).json({ success: false, message: "Parent category must be a number" });
+        if (isNaN(parent_id)) return sendError(res, 400, false, "Parent category must be a number");
 
         if (parent_id === "0") {
             parent_id = null;
         } else {
             const parentCategory = await Categories.findOne({ where: { id: parent_id } });
-            if (!parentCategory) return res.status(400).json({ success: false, message: "Parent category does not exist" });
+            if (!parentCategory) return sendError(res, 400, false, "Parent category does not exist");
         }
 
         // check if category already exists
         const category = await Categories.findOne({ where: { title } });
-        if (category) return res.status(400).json({ success: false, message: "Category already exists" });
+        if (category) return sendError(res, 400, false, "Category already exists");
 
         // create category
         const newCategory = await Categories.create({ title, parent_id });
-        return res.status(201).json({ success: true, message: "Category created successfully", result: newCategory });
+        return sendSuccess(res, 201, true, "Category created successfully", newCategory);
 
     } catch (error) {
-        return res.status(500).json({ success: true, message: "Internal server error", error: error.message });
+        return sendError(res, 500, false, "Something went wrong", error);
     }
 };
 
@@ -73,7 +62,7 @@ const updateCategory = async (req, res) => {
     const { title, parent_id} = req.body;
 
     if(!id || !title || !parent_id){
-        return res.status(400).send("All fields are required");
+        return sendError(res, 400, false, "All fields are required");
     }else{  
         const findCategory = await Categories.findOne({
             where : {
@@ -82,11 +71,7 @@ const updateCategory = async (req, res) => {
         });
 
         if(!findCategory){
-            return res.status(400).json({
-                success : false,
-                message : "Category does not exists",
-                result : findCategory
-            })
+            return sendError(res, 400, false, "Category not found");
         }else{
             const updateCategory = await Categories.update({
                 title,
@@ -96,19 +81,11 @@ const updateCategory = async (req, res) => {
                     id : id
                 }
             });
-            return res.status(200).json({
-                success : true,
-                message : "Category updated successfully",
-                result : updateCategory
-            });
+            return sendSuccess(res, 200, true, "Category updated successfully", updateCategory);
         }
     }
    }catch(err){
-        return res.status(500).json({
-            success : false,
-            message : "Something went wrong",
-            result : err
-        });
+        return sendError(res, 500, false, "Something went wrong", err);
    }
 }
 
