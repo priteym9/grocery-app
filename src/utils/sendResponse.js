@@ -1,6 +1,6 @@
 // dyanamic send response and error handling
 
-const sendResponse = (res, status, success, message, result) => {
+const sendSuccess = (res, status, success, message, result) => {
     res.status(status).json({
         success : success,
         message : message,
@@ -17,6 +17,6 @@ const sendError = (res, status, success, message, error) => {
 }
 
 module.exports = {
-    sendResponse,
+    sendSuccess,
     sendError
 }
