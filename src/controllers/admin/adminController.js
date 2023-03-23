@@ -74,7 +74,22 @@ const login = async (req, res) => {
     }
 }
 
+const getAdminDetails = async (req, res) => {
+    try {
+        let adminId = req.adminId;
+        const admin = await Admin.findOne({attributes: ['first_name', 'last_name', 'email']}, { where: { id: adminId } });
+        if (!admin) {
+            return sendError(res, 400, false, "Admin does not exist")
+        }else{
+            return sendSuccess(res, 200, true, "Admin details", admin)
+        }        
+    } catch (error) {
+        return sendError(res, 500, false, "Something went wrong", error)        
+    }
+}
+
 module.exports = {
     register,
-    login
+    login,
+    getAdminDetails
 }

@@ -8,12 +8,18 @@ const OrderItem = db.order_items;
 
 // add order with items
 const addOrder = async (req, res) => {
-    const { customer_id, delivery_address_id, shipping_address_id, payment_status, order_status } = req.headers;
+
+    const customer_id = req.userId;
+    const { delivery_address_id, shipping_address_id, payment_status, order_status } = req.headers;
     const { order_number, order_date, special_note, estimated_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type } = req.body;
 
     try {
+        // check customer id is not empty
+        if (!customer_id) {
+            return sendError(res, 400, false, "Customer id is required");
+        }
         // check headers fields are not empty
-        if (!customer_id || !delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
+        if (!delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
             return sendError(res, 400, false, "All headers are required");
         }
 
