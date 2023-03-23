@@ -34,7 +34,7 @@ const getAllCategories = async (req, res) => {
 
 // add category
 const addCategory = async (req, res) => {
-    const { title, parent_id } = req.body;
+    let { title, parent_id } = req.body;
     try {
         if (!title) return res.status(400).json({ success: false, message: "Title is required" });
         if (!parent_id) return res.status(400).json({ success: false, message: "Parent category is required" });
