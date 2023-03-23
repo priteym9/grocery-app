@@ -65,6 +65,7 @@ db.paymentStatusMaster = require('./payment_status_master')(sequelize, Sequelize
 db.orderStatusMaster = require('./order_status_master')(sequelize, Sequelize);
 db.orders = require('./orders')(sequelize, Sequelize);
 db.order_items = require('./order_items')(sequelize, Sequelize);
+db.admins = require('./admins')(sequelize, Sequelize);
 
 // associations between models 
 db.categories.hasMany(db.categories, { as: 'children', foreignKey: 'parent_id' });
