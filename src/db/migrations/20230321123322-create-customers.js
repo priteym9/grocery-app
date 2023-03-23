@@ -47,17 +47,17 @@ module.exports = {
       },
       date_of_birth: {
         type: Sequelize.DATEONLY,
-        allowNull: false,
+        defaultValue: null,
         validate: {
           isDate: true
-        }
+        },
       },
       secondary_mobile_number: {
         type: Sequelize.STRING(16),
-        allowNull: false,
         validate: {
           len: 10
-        }
+        },
+        defaultValue: null
       },
       secondary_email: {
         type: Sequelize.STRING,
@@ -69,7 +69,6 @@ module.exports = {
       },
       customer_type: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         defaultValue: 0,
         validate: {
           isIn: [[0, 1, 2]],
@@ -79,18 +78,19 @@ module.exports = {
       is_active: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
-        allowNull: false
       },
       deleted_at: {
         type: Sequelize.DATE
       },
       created_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       updated_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     },{
       paranoid: true,

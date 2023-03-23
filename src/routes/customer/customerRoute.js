@@ -3,9 +3,11 @@ const customerController = require("../../controllers/customer/customerControlle
 
 const router = express.Router();
 
-router.post('/add-customer' , customerController.addCustomer)
+
+router.get('/login' , customerController.login)
+router.post('/register' , customerController.register)
 router.post('/add-customer-address' , customerController.addCustomerAddress)
 router.get('/get-customer-all-orders' , customerController.getCustomerAllOrders)
-router.get('/login' , customerController.login)
+router.put('/update-customer' , customerController.updateCustomer)
 
 module.exports = router;

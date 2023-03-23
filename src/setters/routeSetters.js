@@ -3,7 +3,6 @@ const categoryRoute = require('../routes/category/categoriesRoute.js');
 const customerRoute = require('../routes/customer/customerRoute.js');
 const orderRoute = require('../routes/order/orderRoute.js');
 const productRoute = require('../routes/product/productRoute.js');
-const adminRoute = require('../routes/admin/adminRoute.js');
 const CryptoJS = require('crypto-js');
 
 const router = express.Router();
@@ -12,7 +11,6 @@ router.use('/category' , categoryRoute);
 router.use('/customer' , customerRoute);
 router.use('/order' ,   orderRoute);
 router.use('/product' , productRoute);
-router.use('/admin' , adminRoute);
 
 router.get('/encryption' , (req , res) => {
     const id = req.header('id');

@@ -4,76 +4,65 @@ const CryptoJS = require('crypto-js');
 const Customer = db.customers;
 const Addresses = db.addresses;
 const jwt = require('jsonwebtoken');
+const sendSuccess = require('../../utils/sendResponse.js').sendSuccess;
+const sendError = require('../../utils/sendResponse.js').sendError;
 
 
-// add custmoer 
-const addCustomer = async (req, res) => {
+const updateCustomer = async (req, res) => {
     try{
         const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
+        const customer_id = CryptoJS.AES.decrypt(req.header('customer_id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
         const encryptedPass = CryptoJS.AES.encrypt(password, process.env.SECRET_KEY).toString();
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
-        if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
-            return  res.status(400).send("All fields are required");
+        if(!customer_id){
+            return sendError(res, 400, false, "Customer id is required", null);
+        }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
+            return sendError(res, 400, false, "All fields are required", null);
         }else if(primary_mobile_number.length !== 10){
-            return  res.status(400).send("Primary mobile number must be 10 digits");
-        }else if(!regex.test(primary_email)){
-            return res.status(400).send("Primary email is not valid");
+            return sendError(res, 400, false, "Primary mobile number must be 10 digits", null);
+        }else if(primary_email.length < 8 || primary_email.length > 64){
+            return sendError(res, 400, false, "Primary email must be between 8 and 64 characters", null);
         }else if(password.length < 8 || password.length > 64){
-            return res.status(400).send("Password must be between 8 and 64 characters");   
+            return sendError(res, 400, false, "Password must be between 8 and 64 characters", null);
         }else if(secondary_mobile_number.length !== 10){
-            return res.status(400).send("Secondary mobile number must be 10 digits");
-        }else if(!regex.test(secondary_email)){
-            return res.status(400).send("Secondary email is not valid");
+            return sendError(res, 400, false, "Secondary mobile number must be 10 digits", null);
+        }else if(secondary_email.length < 8 || secondary_email.length > 64){
+            return sendError(res, 400, false, "Secondary email must be between 8 and 64 characters", null);
         }else{
-
             const findCustomer = await Customer.findOne({
                 where : {
-                    primary_email : primary_email,
-                    primary_mobile_number : primary_mobile_number,
-                    username : username,
+                    id : customer_id
                 }
             });
-
             if(findCustomer){
-                return res.status(400).json({
-                    success : false,
-                    message : "Customer already exists",
-                    result : findCustomer
-                })
+                const customer = await Customer.update({
+                    first_name : first_name,
+                    last_name : last_name,
+                    primary_mobile_number : primary_mobile_number,
+                    primary_email : primary_email,
+                    username : username,
+                    password : encryptedPass,
+                    date_of_birth : date_of_birth,
+                    secondary_mobile_number : secondary_mobile_number,
+                    secondary_email : secondary_email
+                }, {
+                    where : {
+                        id : customer_id
+                    }
+                });
+                return sendSuccess(res, 200, true, "Customer updated successfully", customer);
             }else{
-                const customer = await Customer.create({
-                    first_name,
-                    last_name,
-                    primary_mobile_number,
-                    primary_email,
-                    username,
-                    password: encryptedPass,
-                    date_of_birth,
-                    secondary_mobile_number,
-                    secondary_email
-                });
-                return res.status(200).json({
-                    success : true,
-                    message : "Customer added successfully",
-                    result : customer
-                });
+                return sendError(res, 400, false, "Customer not found", null);
             }
         }
     }catch(err){
-        return res.status(500).json({
-            success : false,
-            message : "Something went wrong",
-            result : err.errors[0].message
-        });
-    }
+        return sendError(res, 500, false, err.message, null);
+    }   
 }
 
 // add custmoer address 
 const addCustomerAddress = async (req, res) => {
     
     const customer_id = CryptoJS.AES.decrypt(req.header('customer_id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
-    console.log(customer_id);
     
     // add validationss on address
     try{
@@ -81,9 +70,9 @@ const addCustomerAddress = async (req, res) => {
         const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark } = req.body;
 
         if(!customer_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
-            return res.status(400).send("All fields are required");
+            return sendError(res, 400, false, "All fields are required", null);
         }else if(postal_code.length !== 6){
-            return res.status(400).send("Postal code must be 6 digits");
+            return sendError(res, 400, false, "Postal code must be 6 digits", null);
         }else {
             const findCustomer = await Customer.findOne({
                 where : {
@@ -92,11 +81,7 @@ const addCustomerAddress = async (req, res) => {
             });
 
             if(!findCustomer){
-                return res.status(400).json({
-                    success : false,
-                    message : "Customer not found",
-                    result : null
-                })
+                return sendError(res, 400, false, "Customer not found", null);
             }else{
                 const address = await Addresses.create({
                     customer_id,
@@ -109,11 +94,7 @@ const addCustomerAddress = async (req, res) => {
                     postal_code,
                     landmark
                 });
-                res.status(200).json({
-                    success : true,
-                    message : "Address added successfully",
-                    result : address
-                });
+                return sendSuccess(res, 200, true, "Address added successfully", address);
             }
         }
     }catch(err){
@@ -125,10 +106,7 @@ const addCustomerAddress = async (req, res) => {
 const getCustomerAllOrders = async (req, res) => {
     // Get Customer's all orders by Customer Id
     if(!req.header('customer_id')){
-        return res.status(400).json({
-            success : false,
-            message : "Customer Id is required",
-        });
+        return sendError(res, 400, false, "Customer id is required", null);
     }
     try{
          // Get Customer's all orders by Customer Id using sequelize
@@ -144,25 +122,13 @@ const getCustomerAllOrders = async (req, res) => {
             ]
         });
         if(customer){
-            return res.status(200).json({
-                success : true,
-                message : "Customer's all orders fetched successfully",
-                result : customer
-            });
+            return sendSuccess(res, 200, true, "Customer's all orders", customer.orders);
         }else{
-            return res.status(200).json({
-                success : false,
-                message : "Customer not found",
-                result : null
-            });
+            return sendError(res, 400, false, "Customer not found", null);
         }   
      }
      catch(error){
-        return res.status(500).json({
-            success : false,
-            message : "Internal Server Error",
-            error : error.message ,
-        });
+        return sendError(res, 500, false, error.message, null);
     }
 
 }
@@ -174,7 +140,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
 
         if(!username || !password){
-            return res.status(400).send("All fields are required");
+            return sendError(res, 400, "All fields are required");
         }else{
             const findCustomer = await Customer.findOne({
                 where : {
@@ -182,13 +148,8 @@ const login = async (req, res) => {
                 } ,
                 attributes : ['id', 'first_name', 'last_name', 'username', 'password']
             });
-
             if(!findCustomer){
-                return res.status(400).json({
-                    success : false,
-                    message : "Customer not found",
-                    result : null
-                })
+                return sendError(res, 400, "Customer not found");
             }else{
                 const bytes  = CryptoJS.AES.decrypt(findCustomer.password, process.env.SECRET_KEY);
                 const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
@@ -196,33 +157,63 @@ const login = async (req, res) => {
                     const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
                         expiresIn: 86400 // 24 hours
                     });
-                    return res.status(200).json({
-                        success : true,
-                        message : "Customer logged in successfully",
-                        data : findCustomer,
-                        token : token
-                    });
+                    return sendSuccess(res, 200, "Login successfully", {token});
                 }else{
-                    return res.status(400).json({
-                        success : false,
-                        message : "Password is incorrect",
-                        data : null
-                    });
+                    return sendError(res, 400, "Invalid credentials");
                 }
             }
         }
     }catch(err){
-        return res.status(500).json({
-            success : false,
-            message : "Something went wrong",
-            data : err
-        });
+        return sendError(res, 500, "Something went wrong");
     }
 }
 
+
+const register = async (req , res) => {
+    try {
+        const { first_name , last_name , primary_mobile_number , primary_email , username , password  } = req.body;
+        const encryptedPass = CryptoJS.AES.encrypt(password, process.env.SECRET_KEY).toString();
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+        if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password){
+            return sendError(res, 400, false, "All fields are required", null);
+        }else if(primary_mobile_number.length !== 10){
+            return sendError(res, 400, false, "Mobile number must be 10 digits", null);
+        }else if(!regex.test(primary_email)){
+            return sendError(res, 400, false, "Invalid email", null);
+        }else{
+            const findCustomer = await Customer.findOne({
+                where : {
+                    username : username,
+                    primary_email : primary_email,
+                    primary_mobile_number : primary_mobile_number
+                }
+            });
+            if(findCustomer){
+                return sendError(res, 400, false, "Customer already exists", null);
+            }else{
+                const customer = await Customer.create({
+                    first_name,
+                    last_name,
+                    primary_mobile_number,
+                    primary_email,
+                    username,
+                    password : encryptedPass
+                });
+                return sendSuccess(res, 200, true, "Customer registered successfully", customer);
+            }
+        }
+
+    }catch(err) {
+        return sendError(res, 500, false, err.message, null);
+    }
+
+}
+
 module.exports = {
-    addCustomer,
     addCustomerAddress,
     getCustomerAllOrders,
-    login
+    login,
+    register,
+    updateCustomer
 }
