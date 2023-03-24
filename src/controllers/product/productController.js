@@ -18,6 +18,15 @@ const addProduct = async (req, res) => {
     short_description,
     description,
   } = req.body;
+
+  // generate slug from title and insert it into product table
+  const slug = title.toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+
   let category_id = CryptoJS.AES.decrypt(
     req.header("category_id"),
     process.env.SECRET_KEY
@@ -54,6 +63,7 @@ const addProduct = async (req, res) => {
       short_description,
       description,
       category_id,
+      slug
     });
     if (newProduct) {
       // insert inserted product's id and  category_id in product_category table
@@ -194,7 +204,7 @@ const updateProduct = async (req, res) => {
 
     // check if product_id is a number
     if (isNaN(product_id))
-      return sendError(res, 400, false, "Product Id must be a number"); 
+      return sendError(res, 400, false, "Product Id must be a number");
 
     // check if category exists
     const category = await Category.findOne({ where: { id: category_id } });

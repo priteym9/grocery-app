@@ -11,7 +11,7 @@ const addOrder = async (req, res) => {
 
     const customer_id = req.userId;
     const { delivery_address_id, shipping_address_id, payment_status, order_status } = req.headers;
-    const { order_number, order_date, special_note, estimated_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type } = req.body;
+    const { order_date, special_note, estimated_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type } = req.body;
 
     try {
         // check customer id is not empty
@@ -29,7 +29,7 @@ const addOrder = async (req, res) => {
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
-        const newOrder = await Order.create({ order_number, order_date, special_note, estimated_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, shipping_address_id, payment_status, order_status });
+        const newOrder = await Order.create({  order_date, special_note, estimated_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, shipping_address_id, payment_status, order_status });
 
         if (newOrder) {
             let order_items = [];

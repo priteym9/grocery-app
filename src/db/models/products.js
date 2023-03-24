@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       images: DataTypes.BLOB,
       short_description: DataTypes.STRING,
       description: DataTypes.TEXT,
+      slug: DataTypes.STRING,
       is_active: DataTypes.BOOLEAN,
       deleted_at: DataTypes.DATE,
     },

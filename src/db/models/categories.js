@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       parent_id: DataTypes.INTEGER,
+      slug: DataTypes.STRING,
       is_active: DataTypes.BOOLEAN,
       deleted_at: DataTypes.DATE,
     },

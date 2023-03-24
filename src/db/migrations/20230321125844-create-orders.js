@@ -1,8 +1,6 @@
 'use strict';
-
-const { UUIDV4 } = require('sequelize');
-
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Orders', {
@@ -54,9 +52,7 @@ module.exports = {
       },
       order_number: {
         type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-        defaultValue: UUIDV4()
+        allowNull: true,
       },
       order_date: {
         type: Sequelize.DATE,
