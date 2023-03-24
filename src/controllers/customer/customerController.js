@@ -217,6 +217,42 @@ const getUserDetails = async (req, res) => {
     }
 }
 
+// change password 
+
+const changePassword = async (req , res) => {
+    try{
+        let userId = req.userId;
+        const { oldPassword , newPassword } = req.body;
+        const findCustomer = await Customer.findOne({
+            where : {
+                id : userId
+            }
+        });
+        if(!findCustomer){
+            return sendError(res, 400, false, "Customer not found");
+        }else{
+            const bytes  = CryptoJS.AES.decrypt(findCustomer.password, process.env.SECRET_KEY);
+            const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+            if(originalPassword === oldPassword){
+                const newPass = CryptoJS.AES.encrypt(newPassword, process.env.SECRET_KEY).toString();
+                const user = await Customer.update({
+                    password : newPass
+                },{
+                    where : {
+                        id : userId
+                    }
+                });
+                return sendSuccess(res, 200, true, "Password changed successfully", user);
+            }else{
+                return sendError(res, 400, false, "Old password is incorrect");
+            }
+        }
+
+    }catch(err){
+        return sendError(res, 500, false, "Something went wrong", err);
+    }
+}
+
 
 module.exports = {
     addCustomerAddress,
@@ -224,5 +260,6 @@ module.exports = {
     login,
     register,
     getUserDetails,
-    updateCustomer
+    updateCustomer,
+    changePassword
 }
