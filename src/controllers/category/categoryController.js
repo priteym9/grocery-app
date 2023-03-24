@@ -1,6 +1,6 @@
 const db = require('../../db/models/index');
-const CryptoJS = require('crypto-js');
 const { sendError, sendSuccess } = require('../../utils/sendResponse');
+const { _doDecrypt } = require('../../utils/encryption');
 const Categories = db.categories;
 
 // get all categories
@@ -59,7 +59,7 @@ const addCategory = async (req, res) => {
 // update category
 const updateCategory = async (req, res) => {
     try {
-        const id = CryptoJS.AES.decrypt(req.header('id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
+        const id = _doDecrypt(req.header('id'));
         const { title, parent_id } = req.body;
 
         if (!id || !title || !parent_id) {

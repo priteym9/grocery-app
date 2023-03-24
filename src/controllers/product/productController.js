@@ -1,4 +1,5 @@
 const db = require("../../db/models/index");
+const { _doDecrypt } = require("../../utils/encryption");
 const { sendSuccess, sendError } = require("../../utils/sendResponse");
 
 const Category = db.categories;
@@ -27,10 +28,8 @@ const addProduct = async (req, res) => {
     .replace(/^-+|-+$/g, '')
 
 
-  let category_id = CryptoJS.AES.decrypt(
-    req.header("category_id"),
-    process.env.SECRET_KEY
-  ).toString(CryptoJS.enc.Utf8);
+
+  let category_id = _doDecrypt(req.header("category_id"));
 
   try {
     // for loop for checking all fields are not empty
@@ -94,10 +93,7 @@ const getProductById = async (req, res) => {
   try {
     const product = await Product.findOne({
       where: {
-        id: CryptoJS.AES.decrypt(
-          req.header("product_id"),
-          process.env.SECRET_KEY
-        ).toString(CryptoJS.enc.Utf8),
+        id: _doDecrypt(req.header("product_id")),
       },
     });
     if (product) {
@@ -126,20 +122,14 @@ const getProductByCategory = async (req, res) => {
     // check category id is valid or not
     const category = await Category.findOne({
       where: {
-        id: CryptoJS.AES.decrypt(
-          req.header("category_id"),
-          process.env.SECRET_KEY
-        ).toString(CryptoJS.enc.Utf8),
+        id: _doDecrypt(req.header("category_id")),
       },
     });
     console.log(category);
     if (category) {
       const products = await ProductCategory.findAll({
         where: {
-          category_id: CryptoJS.AES.decrypt(
-            req.header("category_id"),
-            process.env.SECRET_KEY
-          ).toString(CryptoJS.enc.Utf8),
+          category_id: _doDecrypt(req.header("category_id")),
         },
         attributes: ["id", "product_id", "category_id"],
         include: [
@@ -184,14 +174,8 @@ const updateProduct = async (req, res) => {
     short_description,
     description,
   } = req.body;
-  let category_id = CryptoJS.AES.decrypt(
-    req.header("category_id"),
-    process.env.SECRET_KEY
-  ).toString(CryptoJS.enc.Utf8);
-  let product_id = CryptoJS.AES.decrypt(
-    req.header("product_id"),
-    process.env.SECRET_KEY
-  ).toString(CryptoJS.enc.Utf8);
+  let category_id = _doDecrypt(req.header("category_id"));
+  let product_id = _doDecrypt(req.header("product_id"));
   try {
     // for loop for checking all fields are not empty
     for (let key in req.body) {

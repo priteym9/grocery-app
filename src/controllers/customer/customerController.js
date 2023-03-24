@@ -1,18 +1,17 @@
 const db = require('../../db/models/index');
 const { sendSuccess , sendError } =  require('../../utils/sendResponse');
 const Order = db.orders;
-const CryptoJS = require('crypto-js');
 const Customer = db.customers;
 const Addresses = db.addresses;
 const jwt = require('jsonwebtoken');
+const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 
 
 const updateCustomer = async (req, res) => {
     try{
         const customer_id = req.userId;
         const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
-        // const customer_id = CryptoJS.AES.decrypt(req.header('customer_id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8);
-        const encryptedPass = CryptoJS.AES.encrypt(password, process.env.SECRET_KEY).toString();
+        const encryptedPass = _doEncrypt(password);
         if(!customer_id){
             return sendError(res, 400, false, "Customer id is required", null);
         }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
@@ -142,10 +141,9 @@ const login = async (req, res) => {
                 attributes : ['id', 'first_name', 'last_name', 'username', 'password']
             });
             if(!findCustomer){
-                return sendError(res, 400, false, "Invalid credentials");
+                return sendError(res, 400, false, "User not found");
             }else{
-                const bytes  = CryptoJS.AES.decrypt(findCustomer.password, process.env.SECRET_KEY);
-                const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+                const originalPassword = _doDecrypt(findCustomer.password);
                 if(originalPassword === password){
                     const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
                         expiresIn: 86400 // 24 hours
@@ -165,7 +163,7 @@ const login = async (req, res) => {
 const register = async (req , res) => {
     try {
         const { first_name , last_name , primary_mobile_number , primary_email , username , password  } = req.body;
-        const encryptedPass = CryptoJS.AES.encrypt(password, process.env.SECRET_KEY).toString();
+        const encryptedPass = _doEncrypt(password);
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
         if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password){
@@ -228,13 +226,13 @@ const changePassword = async (req , res) => {
                 id : userId
             }
         });
+        console.log(findCustomer.password);
         if(!findCustomer){
             return sendError(res, 400, false, "Customer not found");
         }else{
-            const bytes  = CryptoJS.AES.decrypt(findCustomer.password, process.env.SECRET_KEY);
-            const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+            const originalPassword = _doDecrypt(findCustomer.password);
             if(originalPassword === oldPassword){
-                const newPass = CryptoJS.AES.encrypt(newPassword, process.env.SECRET_KEY).toString();
+                const newPass = _doEncrypt(newPassword);
                 const user = await Customer.update({
                     password : newPass
                 },{
@@ -261,5 +259,5 @@ module.exports = {
     register,
     getUserDetails,
     updateCustomer,
-    changePassword
+    changePassword    
 }

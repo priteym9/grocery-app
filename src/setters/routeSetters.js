@@ -4,8 +4,8 @@ const customerRoute = require('../routes/customer/customerRoute.js');
 const orderRoute = require('../routes/order/orderRoute.js');
 const productRoute = require('../routes/product/productRoute.js');
 const adminRoute = require('../routes/admin/adminRoute.js');
-const CryptoJS = require('crypto-js');
 const { sendSuccess, sendError } = require('../utils/sendResponse.js');
+const { _doEncrypt } = require('../utils/encryption.js');
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.use('/admin', adminRoute);
 router.get('/encryption', (req, res) => {
     const id = req.header('id');
     if (id) {
-        sendSuccess(res, 200, true, "Encrypted Id", CryptoJS.AES.encrypt(id, process.env.SECRET_KEY).toString())
+        sendSuccess(res, 200, true, "Encrypted Id", _doEncrypt(id) )
     } else {
         sendError(res, 400, false, "Id is required")
     }
