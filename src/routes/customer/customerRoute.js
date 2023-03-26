@@ -2,6 +2,7 @@ const express = require('express');
 const customerController = require("../../controllers/customer/customerController.js");
 const validateUserToken = require('../../middlewares/validateUserToken.js');
 
+
 const router = express.Router();
 
 

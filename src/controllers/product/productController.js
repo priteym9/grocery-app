@@ -1,10 +1,10 @@
 const db = require("../../db/models/index");
+const { _doDecrypt } = require("../../utils/encryption");
 const { sendSuccess, sendError } = require("../../utils/sendResponse");
 
 const Category = db.categories;
 const Product = db.products;
 const ProductCategory = db.product_categories;
-const CryptoJS = require("crypto-js");
 const fs = require("fs");
 
 // make a function to save the file in public/products folder and get the file name
@@ -81,10 +81,7 @@ const getProductById = async (req, res) => {
   try {
     const product = await Product.findOne({
       where: {
-        id: CryptoJS.AES.decrypt(
-          req.header("product_id"),
-          process.env.SECRET_KEY
-        ).toString(CryptoJS.enc.Utf8),
+        id: _doDecrypt(req.header("product_id")),
       },
     });
     if (product) {
@@ -113,19 +110,13 @@ const getProductByCategory = async (req, res) => {
     // check category id is valid or not
     const category = await Category.findOne({
       where: {
-        id: CryptoJS.AES.decrypt(
-          req.header("category_id"),
-          process.env.SECRET_KEY
-        ).toString(CryptoJS.enc.Utf8),
+        id: _doDecrypt(req.header("category_id")),
       },
     });
     if (category) {
       const products = await ProductCategory.findAll({
         where: {
-          category_id: CryptoJS.AES.decrypt(
-            req.header("category_id"),
-            process.env.SECRET_KEY
-          ).toString(CryptoJS.enc.Utf8),
+          category_id: _doDecrypt(req.header("category_id")),
         },
         attributes: ["id", "product_id", "category_id"],
         include: [
@@ -171,10 +162,7 @@ const updateProduct = async (req, res) => {
       categoryArray,
     } = req.body;
 
-    let product_id = CryptoJS.AES.decrypt(
-      req.header("product_id"),
-      process.env.SECRET_KEY
-    ).toString(CryptoJS.enc.Utf8);
+    let product_id = _doDecrypt(req.header("product_id"));
 
     // check if all fields are empty or not
     if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {

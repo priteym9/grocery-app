@@ -1,9 +1,8 @@
-
 const db = require('../../db/models/index');
 const Admin = db.admins;
-const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const { sendError, sendSuccess } = require('../../utils/sendResponse');
+const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 
 const register = async (req, res) => {
     // admin registration logic    
@@ -26,7 +25,7 @@ const register = async (req, res) => {
             return sendError(res, 400, false, "Admin already exists")
         } else {
             // encrypt password
-            const encryptedPass = CryptoJS.AES.encrypt(password, process.env.SECRET_KEY).toString();
+            const encryptedPass = _doEncrypt(password);
             // create admin
             const newAdmin = await Admin.create({ first_name, last_name, email, password: encryptedPass });
             if (newAdmin) {
@@ -58,8 +57,7 @@ const login = async (req, res) => {
             return sendError(res, 400, false, "Admin does not exist")
         }
         // decrypt password
-        const bytes = CryptoJS.AES.decrypt(admin.password, process.env.SECRET_KEY);
-        const originalPass = bytes.toString(CryptoJS.enc.Utf8);
+        const originalPass = _doDecrypt(admin.password);
         // check if password is correct
         if (originalPass !== password) {
             return sendError(res, 400, false, "Password is incorrect")

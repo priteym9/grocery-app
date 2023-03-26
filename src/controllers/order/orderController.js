@@ -1,7 +1,7 @@
 const db = require('../../db/models/index');
 const Order = db.orders;
-const CryptoJS = require("crypto-js");
 const { sendError, sendSuccess } = require('../../utils/sendResponse');
+const { _doDecrypt } = require('../../utils/encryption');
 const OrderItem = db.order_items;
 
 
@@ -58,7 +58,7 @@ const getOrderById = async (req, res) => {
     try{
         const order = await Order.findOne({
             where: {
-                id: CryptoJS.AES.decrypt(req.header('order_id'), process.env.SECRET_KEY).toString(CryptoJS.enc.Utf8)
+                id: _doDecrypt(req.header('order_id'))
             }
         });
         if(order){
