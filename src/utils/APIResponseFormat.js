@@ -107,6 +107,11 @@ const _ResAdminLoginSuccess = (res, admin) => {
     res.status(200).json(new APIResponseFormat(200, true, "Admin Login successful", admin));
 }
 
+const _ResRouteNotFound = (res) => {
+    res.status(404).json(new APIResponseFormat(404, false, "Route not found"));
+}
+
+
 
 
 
@@ -136,7 +141,8 @@ module.exports = {
     _ResAdminDoesNotExist ,
     _ResAdminDetails ,
     _ResDataNotExists ,
-    _ResAdminLoginSuccess
+    _ResAdminLoginSuccess ,
+    _ResRouteNotFound
 
 }
 

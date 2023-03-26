@@ -1,8 +1,6 @@
 const db = require("../../db/models/index");
 const { _doDecrypt } = require("../../utils/encryption");
 const APIResponseFormat = require("../../utils/APIResponseFormat");
-const { sendError, sendSuccess } = require("../../utils/sendResponse");
-
 const Category = db.categories;
 const Product = db.products;
 const ProductCategory = db.product_categories;
