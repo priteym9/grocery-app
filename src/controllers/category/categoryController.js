@@ -1,5 +1,5 @@
 const db = require('../../db/models/index');
-const { sendError, sendSuccess } = require('../../utils/sendResponse');
+const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doDecrypt } = require('../../utils/encryption');
 const Categories = db.categories;
 
@@ -10,13 +10,14 @@ const getAllCategories = async (req, res) => {
             attributes: ['id', 'title', 'parent_id']
         });
         if (allCategories.length === 0) {
-            return sendError(res, 400, false, "No categories found")
+            return APIResponseFormat._ResDataNotExists(res , "Categories not found")
+
         } else {
-            return sendSuccess(res, 200, true, "Categories found", allCategories)
+            return APIResponseFormat._ResDataFound(res , allCategories)
         }
 
     } catch (err) {
-        return sendError(res, 500, false, "Something went wrong", err)
+        return APIResponseFormat._ResServerError(res, err)
     }
 }
 
@@ -30,28 +31,28 @@ const addCategory = async (req, res) => {
         .replace(/[\s_-]+/g, '-')
         .replace(/^-+|-+$/g, '')
     try {
-        if (!title) return sendError(res, 400, false, "Category title is required");
-        if (!parent_id) return sendError(res, 400, false, "Parent category is required");
+        if (!title) return APIResponseFormat._ResMissingRequiredField(res, "title is required");
+        if (!parent_id) return APIResponseFormat._ResMissingRequiredField(res, "parent_id is required");
         // check if parent_id is a number
-        if (isNaN(parent_id)) return sendError(res, 400, false, "Parent category must be a number");
+        if (isNaN(parent_id)) return APIResponseFormat._ResMissingRequiredField(res, "parent_id must be a number")
 
         if (parent_id === "0") {
             parent_id = null;
         } else {
             const parentCategory = await Categories.findOne({ where: { id: parent_id } });
-            if (!parentCategory) return sendError(res, 400, false, "Parent category does not exist");
+            if (!parentCategory) return APIResponseFormat._ResDataNotExists(res, "Parent category not found");
         }
 
         // check if category already exists
         const category = await Categories.findOne({ where: { title } });
-        if (category) return sendError(res, 400, false, "Category already exists");
+        if (category) return APIResponseFormat._ResDataAlreadyExists(res);
 
         // create category
         const newCategory = await Categories.create({ title, parent_id, slug });
-        return sendSuccess(res, 201, true, "Category created successfully", newCategory);
+        return APIResponseFormat._ResDataCreated(res, newCategory);
 
     } catch (error) {
-        return sendError(res, 500, false, "Something went wrong", error);
+        return APIResponseFormat._ResServerError(res, error);
     }
 };
 
@@ -63,7 +64,7 @@ const updateCategory = async (req, res) => {
         const { title, parent_id } = req.body;
 
         if (!id || !title || !parent_id) {
-            return sendError(res, 400, false, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
         } else {
             const findCategory = await Categories.findOne({
                 where: {
@@ -72,7 +73,7 @@ const updateCategory = async (req, res) => {
             });
 
             if (!findCategory) {
-                return sendError(res, 400, false, "Category not found");
+                return APIResponseFormat._ResDataNotExists(res, "Category not found");
             } else {
                 const updateCategory = await Categories.update({
                     title,
@@ -82,11 +83,11 @@ const updateCategory = async (req, res) => {
                         id: id
                     }
                 });
-                return sendSuccess(res, 200, true, "Category updated successfully", updateCategory);
+                return APIResponseFormat._ResDataUpdated(res, updateCategory);
             }
         }
     } catch (err) {
-        return sendError(res, 500, false, "Something went wrong", err);
+        return APIResponseFormat._ResServerError(res, err);
     }
 }
 

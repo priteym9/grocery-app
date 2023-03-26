@@ -1,5 +1,5 @@
 const db = require('../../db/models/index');
-const { sendSuccess , sendError } =  require('../../utils/sendResponse');
+const APIResponseFormat = require('../../utils/APIResponseFormat');
 const Order = db.orders;
 const Customer = db.customers;
 const Addresses = db.addresses;
@@ -13,19 +13,19 @@ const updateCustomer = async (req, res) => {
         const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         const encryptedPass = _doEncrypt(password);
         if(!customer_id){
-            return sendError(res, 400, false, "Customer id is required", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Customer id is required");
         }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
-            return sendError(res, 400, false, "All fields are required", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
         }else if(primary_mobile_number.length !== 10){
-            return sendError(res, 400, false, "Primary mobile number must be 10 digits", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
         }else if(primary_email.length < 8 || primary_email.length > 64){
-            return sendError(res, 400, false, "Primary email must be between 8 and 64 characters", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Primary email must be between 8 and 64 characters");
         }else if(password.length < 8 || password.length > 64){
-            return sendError(res, 400, false, "Password must be between 8 and 64 characters", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Password must be between 8 and 64 characters");
         }else if(secondary_mobile_number.length !== 10){
-            return sendError(res, 400, false, "Secondary mobile number must be 10 digits", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Secondary mobile number must be 10 digits");
         }else if(secondary_email.length < 8 || secondary_email.length > 64){
-            return sendError(res, 400, false, "Secondary email must be between 8 and 64 characters", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Secondary email must be between 8 and 64 characters");
         }else{
             const findCustomer = await Customer.findOne({
                 where : {
@@ -48,13 +48,13 @@ const updateCustomer = async (req, res) => {
                         id : customer_id
                     }
                 });
-                return sendSuccess(res, 200, true, "Customer updated successfully", customer);
+                return APIResponseFormat._ResDataUpdated(res, customer);
             }else{
-                return sendError(res, 400, false, "Customer not found", null);
+                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
             }
         }
     }catch(err){
-        return sendError(res, 500, false, err.message, null);
+        return APIResponseFormat._ResError(res, err);
     }   
 }
 
@@ -67,9 +67,9 @@ const addCustomerAddress = async (req, res) => {
         const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark } = req.body;
 
         if(!customer_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
-            return sendError(res, 400, false, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
         }else if(postal_code.length !== 6){
-            return sendError(res, 400, false, "Postal code must be 6 digits");
+            return APIResponseFormat._ResMissingRequiredField(res, "Postal code must be 6 digits");
         }else {
             const findCustomer = await Customer.findOne({
                 where : {
@@ -78,7 +78,7 @@ const addCustomerAddress = async (req, res) => {
             });
 
             if(!findCustomer){
-                return sendError(res, 400, false, "Customer not found");
+                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
             }else{
                 const address = await Addresses.create({
                     customer_id,
@@ -91,11 +91,11 @@ const addCustomerAddress = async (req, res) => {
                     postal_code,
                     landmark
                 });
-                return sendSuccess(res, 200, true, "Address added successfully", address);
+                return APIResponseFormat._ResDataCreated(res, address);
             }
         }
     }catch(err){
-        return sendError(res, 500, false, "Something went wrong", err)
+        return APIResponseFormat._ResError(res, err);
     }
 }
 
@@ -116,13 +116,13 @@ const getCustomerAllOrders = async (req, res) => {
             ]
         });
         if(customer){
-            return sendSuccess(res, 200, true, "Customer's all orders", customer);
+            return APIResponseFormat._ResDataFound(res, customer);
         }else{
-            return sendError(res, 400, false, "Customer not found");
+            return APIResponseFormat._ResDataNotExists(res, "Customer not found");
         }           
      }
      catch(error){
-        return sendError(res, 500, false, "Something went wrong", error);
+        return APIResponseFormat._ResServerError(res, error);
     }
 
 }
@@ -132,7 +132,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
 
         if(!username || !password){
-            return sendError(res, 400, false , "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
         }else{
             const findCustomer = await Customer.findOne({
                 where : {
@@ -141,21 +141,22 @@ const login = async (req, res) => {
                 attributes : ['id', 'first_name', 'last_name', 'username', 'password']
             });
             if(!findCustomer){
-                return sendError(res, 400, false, "User not found");
+                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
             }else{
                 const originalPassword = _doDecrypt(findCustomer.password);
                 if(originalPassword === password){
                     const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
                         expiresIn: 86400 // 24 hours
                     });
-                    return sendSuccess(res, 200, true, "Login successful", { token });
+                    return APIResponseFormat._ResDataFound(res, { token });
                 }else{
-                    return sendError(res, 400, false, "Invalid credentials");
+                    return APIResponseFormat._ResPasswordIncorrect(res);
                 }
             }
         }
-    }catch(err){
-        return  sendError(res, 500, false, "Something went wrong", err);
+    }catch(error){
+        return APIResponseFormat._ResServerError(res, error);
+
     }
 }
 
@@ -167,11 +168,11 @@ const register = async (req , res) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
         if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password){
-            return sendError(res, 400, false, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
         }else if(primary_mobile_number.length !== 10){
-            return sendError(res, 400, false, "Mobile number must be 10 digits", null);
+            return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
         }else if(!regex.test(primary_email)){
-            return sendError(res, 400, false, "Invalid email", null);
+            return APIResponseFormat._ResInvalidEmail(res);
         }else{
             const findCustomer = await Customer.findOne({
                 where : {
@@ -181,7 +182,7 @@ const register = async (req , res) => {
                 }
             });
             if(findCustomer){
-                return sendError(res, 400, false, "Customer already exists", null);
+                return APIResponseFormat._ResDataAlreadyExists(res);
             }else{
                 const customer = await Customer.create({
                     first_name,
@@ -191,12 +192,12 @@ const register = async (req , res) => {
                     username,
                     password : encryptedPass
                 });
-                return sendSuccess(res, 200, true, "Customer registered successfully", customer);
+                return APIResponseFormat._ResDataCreated(res, customer);
             }
         }
 
-    }catch(err) {
-        return sendError(res, 500, false, "Something went wrong", err);
+    }catch(error) {
+        return APIResponseFormat._ResServerError(res, error);
     }
 
 }
@@ -206,12 +207,12 @@ const getUserDetails = async (req, res) => {
         let userId = req.userId;
         const user = await Customer.findOne({attributes: ['first_name', 'last_name', 'primary_email']}, { where: { id: userId } });
         if (!user) {
-            return sendError(res, 400, false, "User does not exist")
+            return APIResponseFormat._ResDataNotExists(res, "User not found");
         }else{
-            return sendSuccess(res, 200, true, "User details", user)
+            return APIResponseFormat._ResDataFound(res, user);
         }        
     } catch (error) {
-        return sendError(res, 500, false, "Something went wrong", error);        
+        return APIResponseFormat._ResServerError(res, error);        
     }
 }
 
@@ -228,7 +229,7 @@ const changePassword = async (req , res) => {
         });
         console.log(findCustomer.password);
         if(!findCustomer){
-            return sendError(res, 400, false, "Customer not found");
+            return APIResponseFormat._ResDataNotExists(res, "Customer not found");
         }else{
             const originalPassword = _doDecrypt(findCustomer.password);
             if(originalPassword === oldPassword){
@@ -240,14 +241,14 @@ const changePassword = async (req , res) => {
                         id : userId
                     }
                 });
-                return sendSuccess(res, 200, true, "Password changed successfully", user);
+                return APIResponseFormat._ResDataUpdated(res, user);
             }else{
-                return sendError(res, 400, false, "Old password is incorrect");
+                return APIResponseFormat._ResPasswordIncorrect(res);
             }
         }
 
     }catch(err){
-        return sendError(res, 500, false, "Something went wrong", err);
+        return APIResponseFormat._ResServerError(res, err);
     }
 }
 

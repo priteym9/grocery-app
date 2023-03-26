@@ -1,6 +1,7 @@
 const db = require("../../db/models/index");
 const { _doDecrypt } = require("../../utils/encryption");
-const { sendSuccess, sendError } = require("../../utils/sendResponse");
+const APIResponseFormat = require("../../utils/APIResponseFormat");
+const { sendError, sendSuccess } = require("../../utils/sendResponse");
 
 const Category = db.categories;
 const Product = db.products;
@@ -11,17 +12,17 @@ const fs = require("fs");
 const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
-      return sendError(res, 400, false, "Image is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
     } else {
       // read the file from req.file and save it in public/products folder and get the file name using readFileSync
       // and save the file name in images column of product table
 
       let filedata = fs.readFileSync(req.file.path);
-      return sendSuccess(res, 200, true, "Image uploaded successfully", { file: req.file, filedata: filedata });
+      return APIResponseFormat._ResDataCreated(res, { file: req.file, filedata: filedata });
 
     }
   } catch (error) {
-    return sendError(res, 500, false, "Something went wrong", error);
+    return APIResponseFormat._ResServerError(res, error);
   }
 };
 
@@ -31,18 +32,18 @@ const addProduct = async (req, res) => {
     let { title, amount, discount_type, discount_amount, short_description, description, categoryArray } = req.body;
     // check if all fields are filled
     if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {
-      return sendError(res, 400, false, "All fields are required");
+      return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
     }
 
     // check categoryArray is not empty
     if (!categoryArray || categoryArray.length === 0) {
-      return sendError(res, 400, false, "Category is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category is required");
     }
 
     // check if product already exists
     const product = await Product.findOne({ where: { title } });
     if (product) {
-      return sendError(res, 400, false, "Product already exists");
+      return APIResponseFormat._ResDataAlreadyExists(res)
     }
 
     // create a product and insert data into it and also insert category_id in product_category table 
@@ -64,11 +65,11 @@ const addProduct = async (req, res) => {
       // insert data into product_category table
       const productCategory = await ProductCategory.bulkCreate(productCategoryArray);
       if (productCategory) {
-        return sendSuccess(res, 200, true, "Product added successfully", newProduct);
+        return APIResponseFormat._ResDataCreated(res, newProduct);
       }
     }
   } catch (error) {
-    return sendError(res, 500, false, "Something went wrong", error);
+    return APIResponseFormat._ResServerError(res, error);
   }
 };
 
@@ -76,7 +77,7 @@ const addProduct = async (req, res) => {
 const getProductById = async (req, res) => {
   // Get Product details by Product Id
   if (!req.header("product_id")) {
-    return sendError(res, 400, false, "Product Id is required");
+    return APIResponseFormat._ResMissingRequiredField(res, "Product Id is required");
   }
   try {
     const product = await Product.findOne({
@@ -85,18 +86,12 @@ const getProductById = async (req, res) => {
       },
     });
     if (product) {
-      return sendSuccess(
-        res,
-        200,
-        true,
-        "Product fetched successfully",
-        product
-      );
+      return APIResponseFormat._ResDataFound(res, product);
     } else {
-      return sendError(res, 200, false, "Product not found");
+      return APIResponseFormat._ResDataNotFound(res);
     }
   } catch (error) {
-    return sendError(res, 500, false, "som", error);
+    return APIResponseFormat._ResServerError(res, error);
   }
 };
 
@@ -104,7 +99,7 @@ const getProductById = async (req, res) => {
 const getProductByCategory = async (req, res) => {
   try {
     if (!req.header("category_id")) {
-      return sendError(res, 400, false, "Category Id is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category Id is required");
     }
 
     // check category id is valid or not
@@ -129,23 +124,17 @@ const getProductByCategory = async (req, res) => {
 
       // check if products array is not empty
       if (products.length > 0) {
-        return sendSuccess(
-          res,
-          200,
-          true,
-          "Products fetched successfully",
-          products
-        );
+        return APIResponseFormat._ResDataFound(res, products);
       } else {
-        return sendError(res, 200, false, "this category has no products");
+        return APIResponseFormat._ResDataNotExists(res, "No products found")
       }
     } else {
-      return sendError(res, 200, false, "Category not found");
+      return  APIResponseFormat._ResDataNotExists(res, "No category found")
     }
 
     // Get All Products by Category Id join with product_categories table
   } catch (error) {
-    return sendError(res, 500, false, "Something went wrong", error);
+    return APIResponseFormat._ResServerError(res, error);
   }
 };
 
@@ -166,12 +155,12 @@ const updateProduct = async (req, res) => {
 
     // check if all fields are empty or not
     if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {
-      return sendError(res, 400, false, "All fields are required");
+      return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
     }
 
     // check if categoryArray is empty or not
     if (!categoryArray || categoryArray.length === 0) {
-      return sendError(res, 400, false, "Category is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category is required");
     }
 
     // check product id is valid or not, if valid then update product details and also update product_category table 
@@ -236,13 +225,13 @@ const updateProduct = async (req, res) => {
           });
           await ProductCategory.bulkCreate(insertArray);
         }
-        return sendSuccess(res, 200, true, "Product updated successfully", { previousCategoryArray, currentCategoryArray, insertCategoryArray, deleteCategoryArray });
+        return APIResponseFormat._ResDataUpdated(res, "Product updated successfully" , { previousCategoryArray, currentCategoryArray, insertCategoryArray, deleteCategoryArray });
       }
     } else {
-      return sendError(res, 200, false, "Product not found");
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
   } catch (error) {
-    return sendError(res, 500, false, "Something went wrong", error);
+    return APIResponseFormat._ResServerError(res, error);
   }
 };
 

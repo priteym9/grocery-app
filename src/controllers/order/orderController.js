@@ -1,6 +1,6 @@
 const db = require('../../db/models/index');
 const Order = db.orders;
-const { sendError, sendSuccess } = require('../../utils/sendResponse');
+const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doDecrypt } = require('../../utils/encryption');
 const OrderItem = db.order_items;
 
@@ -16,16 +16,16 @@ const addOrder = async (req, res) => {
     try {
         // check customer id is not empty
         if (!customer_id) {
-            return sendError(res, 400, false, "Customer id is required");
+            return APIResponseFormat._ResMissingRequiredField(res, "customer_id is required");
         }
         // check headers fields are not empty
         if (!delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
-            return sendError(res, 400, false, "All headers are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "Headers fields are required");
         }
 
         // for loop for checking all fields are not empty
         for (let key in req.body) {
-            if (req.body[key] === "") return sendError(res, 400, false, `${key} is required`);
+            if (req.body[key] === "") return APIResponseFormat._ResMissingRequiredField(res, key);
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
@@ -40,11 +40,11 @@ const addOrder = async (req, res) => {
             });
             const newOrderItems = await OrderItem.bulkCreate(order_items);
             if (newOrderItems) {
-                return sendSuccess(res, 201, true, "Order created successfully", newOrder);
+                return APIResponseFormat._ResDataCreated(res,newOrder);
             }
         }
     } catch (error) {
-        return sendError(res, 500, false, "Something went wrong", error);
+        return APIResponseFormat._ResServerError(res, error);
     }
 }
 
@@ -53,7 +53,7 @@ const getOrderById = async (req, res) => {
     
     // Get Order full details by Order Id
     if(!req.header('order_id')){
-        return sendError(res, 400, false, "Order Id is required");
+        return APIResponseFormat._ResMissingRequiredField(res, "order_id is required");
     }
     try{
         const order = await Order.findOne({
@@ -62,12 +62,12 @@ const getOrderById = async (req, res) => {
             }
         });
         if(order){
-            return sendSuccess(res, 200, true, "Order found", order);
+            return APIResponseFormat._ResDataFound(res, order);
         }else{
-            return sendError(res, 400, false, "Order not found");
+            return APIResponseFormat._ResDataNotFound(res, "Order not found");
         }
     }catch(error){
-        return sendError(res, 500, false, "Something went wrong", error);
+        return APIResponseFormat._ResServerError(res, error);
     }
 }
 
