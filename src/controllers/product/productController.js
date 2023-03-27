@@ -11,14 +11,22 @@ const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
       return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
-    } else {
-      // read the file from req.file and save it in public/products folder and get the file name using readFileSync
-      // and save the file name in images column of product table
-
-      let filedata = fs.readFileSync(req.file.path);
-      return APIResponseFormat._ResDataCreated(res, { file: req.file, filedata: filedata });
-
     }
+    let filedata = fs.readFileSync(req.file.path);
+    req.file.data = filedata;
+    return APIResponseFormat._ResDataCreated(res, { file: req.file });
+  } catch (error) {
+    return APIResponseFormat._ResServerError(res, error);
+  }
+};
+
+// make an API for upload multiple images
+const uploadMultipleImages = async (req, res) => {
+  try {
+    if (!req.files) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
+    }
+    return APIResponseFormat._ResDataCreated(res, { files: req.files });
   } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
@@ -27,16 +35,24 @@ const uploadImage = async (req, res) => {
 // add product
 const addProduct = async (req, res) => {
   try {
-    let { title, amount, discount_type, discount_amount, short_description, description, categoryArray } = req.body;
+    let { title, amount, discount_type, discount_amount, short_description, description, categoryArrayFromBody } = req.body;
     // check if all fields are filled
-    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {
+    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description || !categoryArrayFromBody) {
       return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
     }
+
+    let categoryArray = JSON.parse(categoryArrayFromBody);
 
     // check categoryArray is not empty
     if (!categoryArray || categoryArray.length === 0) {
       return APIResponseFormat._ResMissingRequiredField(res, "Category is required");
     }
+
+    // check if image is uploaded or not    
+    if (!req.file) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
+    }
+    let avatar_image = req.file.filename;
 
     // check if product already exists
     const product = await Product.findOne({ where: { title } });
@@ -52,6 +68,7 @@ const addProduct = async (req, res) => {
       discount_amount,
       short_description,
       description,
+      avatar_image,
       slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
     });
     if (newProduct) {
@@ -127,7 +144,7 @@ const getProductByCategory = async (req, res) => {
         return APIResponseFormat._ResDataNotExists(res, "No products found")
       }
     } else {
-      return  APIResponseFormat._ResDataNotExists(res, "No category found")
+      return APIResponseFormat._ResDataNotExists(res, "No category found")
     }
 
     // Get All Products by Category Id join with product_categories table
@@ -148,11 +165,15 @@ const updateProduct = async (req, res) => {
       description,
       categoryArray,
     } = req.body;
-
     let product_id = _doDecrypt(req.header("product_id"));
 
+    // check if product id is valid or not
+    if (!product_id) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Product Id is required");
+    }
+
     // check if all fields are empty or not
-    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {
+    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description || !categoryArray) {
       return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
     }
 
@@ -223,7 +244,7 @@ const updateProduct = async (req, res) => {
           });
           await ProductCategory.bulkCreate(insertArray);
         }
-        return APIResponseFormat._ResDataUpdated(res, "Product updated successfully" , { previousCategoryArray, currentCategoryArray, insertCategoryArray, deleteCategoryArray });
+        return APIResponseFormat._ResDataUpdated(res, "Product updated successfully", { previousCategoryArray, currentCategoryArray, insertCategoryArray, deleteCategoryArray });
       }
     } else {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
@@ -238,7 +259,6 @@ module.exports = {
   getProductByCategory,
   updateProduct,
   addProduct,
-  uploadImage
+  uploadImage,
+  uploadMultipleImages
 };
-
-

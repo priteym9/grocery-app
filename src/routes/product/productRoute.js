@@ -7,18 +7,6 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, path.join(__dirname, '../../public/product'));
-//     },
-//     filename: function (req, file, cb) {
-//         cb(null, Date.now() + '-' + file.originalname);
-//     }
-// });
-
-// const upload = multer({ storage: storage });
-
-
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, path.join(__dirname, '../../public/products'));
@@ -38,11 +26,13 @@ const upload = multer({
     }
 });
 
+// make a route to upload multiple images
+router.post('/upload-images', upload.array('images', 10), productController.uploadMultipleImages);
 router.post('/upload-avatar', upload.single('avatar_image'), productController.uploadImage);
 
 router.get('/get-product-by-id', productController.getProductById)
 router.get('/get-product-by-category-id', productController.getProductByCategory)
 router.put('/update-product', validateAdminToken, productController.updateProduct)
-router.post('/add-product', validateAdminToken, productController.addProduct)
+router.post('/add-product', validateAdminToken, upload.single('avatar_image'), productController.addProduct)
 
 module.exports = router;
