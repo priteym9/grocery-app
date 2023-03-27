@@ -227,7 +227,6 @@ const changePassword = async (req , res) => {
                 id : userId
             }
         });
-        console.log(findCustomer.password);
         if(!findCustomer){
             return APIResponseFormat._ResDataNotExists(res, "Customer not found");
         }else{
