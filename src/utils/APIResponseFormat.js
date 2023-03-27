@@ -44,7 +44,7 @@ const _ResPasswordIncorrect = (res) => {
 }
 
 const _ResServerError = (res, err) => {
-    res.status(500).json(new APIResponseFormat(500, false, "Something went wrong", null, err));
+    res.status(500).json(new APIResponseFormat(500, false, "Internal server error", null, err));
 }
 
 const _ResInvalidCredentials = (res) => {

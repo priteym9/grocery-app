@@ -10,16 +10,12 @@ const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 const updateCustomer = async (req, res) => {
     try{
         const customer_id = req.userId;
-        const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
+        const { first_name, last_name, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         const encryptedPass = _doEncrypt(password);
         if(!customer_id){
             return APIResponseFormat._ResMissingRequiredField(res, "Customer id is required");
-        }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
+        }else if(!first_name || !last_name || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
             return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
-        }else if(primary_mobile_number.length !== 10){
-            return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
-        }else if(primary_email.length < 8 || primary_email.length > 64){
-            return APIResponseFormat._ResMissingRequiredField(res, "Primary email must be between 8 and 64 characters");
         }else if(password.length < 8 || password.length > 64){
             return APIResponseFormat._ResMissingRequiredField(res, "Password must be between 8 and 64 characters");
         }else if(secondary_mobile_number.length !== 10){
@@ -36,9 +32,6 @@ const updateCustomer = async (req, res) => {
                 const customer = await Customer.update({
                     first_name : first_name,
                     last_name : last_name,
-                    primary_mobile_number : primary_mobile_number,
-                    primary_email : primary_email,
-                    username : username,
                     password : encryptedPass,
                     date_of_birth : date_of_birth,
                     secondary_mobile_number : secondary_mobile_number,
@@ -54,7 +47,7 @@ const updateCustomer = async (req, res) => {
             }
         }
     }catch(err){
-        return APIResponseFormat._ResError(res, err);
+        return APIResponseFormat._ResServerError(res, err);
     }   
 }
 
