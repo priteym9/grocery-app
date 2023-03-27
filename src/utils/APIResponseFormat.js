@@ -23,7 +23,7 @@ const _ResUserAlreadyExists = (res) => {
 }
 
 const _ResUserDoesNotExist = (res) => {
-    res.status(400).json(new APIResponseFormat(400, false, "User does not exist"));
+    res.status(400).json(new APIResponseFormat(400, false, "Customer does not exist"));
 }
 
 const _ResAdminAlreadyExists = (res) => {
@@ -51,9 +51,7 @@ const _ResInvalidCredentials = (res) => {
     res.status(401).json(new APIResponseFormat(401, false, "Invalid credentials"));
 }
 
-const _ResUnauthrized = (res) => {
-    res.status(401).json(new APIResponseFormat(401, false, "Unauthorized"));
-}
+
 
 const _ResLoginSuccess = (res, user) => {
     res.status(200).json(new APIResponseFormat(200, true, "Login successful", user));
@@ -79,24 +77,9 @@ const _ResDataUpdated = (res, data) => {
     res.status(200).json(new APIResponseFormat(200, true, "Data updated", data));
 }
 
-const _ResDataDeleted = (res) => {
-    res.status(200).json(new APIResponseFormat(200, true, "Data deleted"));
-}
 
 const _ResDataAlreadyExists = (res) => {
     res.status(400).json(new APIResponseFormat(400, false, "Data already exists"));
-}
-
-const _ResDataNotCreated = (res) => {
-    res.status(400).json(new APIResponseFormat(400, false, "Data not created"));
-}
-
-const _ResDataNotUpdated = (res) => {
-    res.status(400).json(new APIResponseFormat(400, false, "Data not updated"));
-}
-
-const _ResDataNotDeleted = (res) => {
-    res.status(400).json(new APIResponseFormat(400, false, "Data not deleted"));
 }
 
 const _ResDataNotExists = (res , message) => {
@@ -106,6 +89,11 @@ const _ResDataNotExists = (res , message) => {
 const _ResAdminLoginSuccess = (res, admin) => {
     res.status(200).json(new APIResponseFormat(200, true, "Admin Login successful", admin));
 }
+
+const _ResAdminRegisterSuccess = (res, admin) => {
+    res.status(201).json(new APIResponseFormat(201, true, "Admin Register successful", admin));
+}
+
 
 const _ResRouteNotFound = (res) => {
     res.status(404).json(new APIResponseFormat(404, false, "Route not found"));
@@ -125,24 +113,20 @@ module.exports = {
     _ResPasswordIncorrect,
     _ResServerError,
     _ResInvalidCredentials,
-    _ResUnauthrized,
     _ResLoginSuccess,
     _ResRegisterSuccess,
     _ResDataNotFound,
     _ResDataFound,
     _ResDataCreated,
     _ResDataUpdated,
-    _ResDataDeleted,
     _ResDataAlreadyExists,
-    _ResDataNotCreated,
-    _ResDataNotUpdated,
-    _ResDataNotDeleted,
     _ResAdminAlreadyExists,
     _ResAdminDoesNotExist ,
     _ResAdminDetails ,
     _ResDataNotExists ,
     _ResAdminLoginSuccess ,
-    _ResRouteNotFound
+    _ResRouteNotFound ,
+    _ResAdminRegisterSuccess
 
 }
 

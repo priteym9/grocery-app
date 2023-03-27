@@ -50,7 +50,7 @@ const updateCustomer = async (req, res) => {
                 });
                 return APIResponseFormat._ResDataUpdated(res, customer);
             }else{
-                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
+                return APIResponseFormat._ResUserDoesNotExist(res);
             }
         }
     }catch(err){
@@ -78,7 +78,7 @@ const addCustomerAddress = async (req, res) => {
             });
 
             if(!findCustomer){
-                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
+                return APIResponseFormat._ResUserDoesNotExist(res);
             }else{
                 const address = await Addresses.create({
                     customer_id,
@@ -118,7 +118,7 @@ const getCustomerAllOrders = async (req, res) => {
         if(customer){
             return APIResponseFormat._ResDataFound(res, customer);
         }else{
-            return APIResponseFormat._ResDataNotExists(res, "Customer not found");
+            return APIResponseFormat._ResUserDoesNotExist(res);
         }           
      }
      catch(error){
@@ -141,14 +141,14 @@ const login = async (req, res) => {
                 attributes : ['id', 'first_name', 'last_name', 'username', 'password']
             });
             if(!findCustomer){
-                return APIResponseFormat._ResDataNotExists(res, "Customer not found");
+                return APIResponseFormat._ResUserDoesNotExist(res);
             }else{
                 const originalPassword = _doDecrypt(findCustomer.password);
                 if(originalPassword === password){
                     const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
                         expiresIn: 86400 // 24 hours
                     });
-                    return APIResponseFormat._ResDataFound(res, { token });
+                    return APIResponseFormat._ResLoginSuccess(res, token);
                 }else{
                     return APIResponseFormat._ResPasswordIncorrect(res);
                 }
@@ -182,7 +182,7 @@ const register = async (req , res) => {
                 }
             });
             if(findCustomer){
-                return APIResponseFormat._ResDataAlreadyExists(res);
+                return APIResponseFormat._ResUserAlreadyExists(res);
             }else{
                 const customer = await Customer.create({
                     first_name,
@@ -192,7 +192,7 @@ const register = async (req , res) => {
                     username,
                     password : encryptedPass
                 });
-                return APIResponseFormat._ResDataCreated(res, customer);
+                return APIResponseFormat._ResRegisterSuccess(res, customer);
             }
         }
 
@@ -207,7 +207,7 @@ const getUserDetails = async (req, res) => {
         let userId = req.userId;
         const user = await Customer.findOne({attributes: ['first_name', 'last_name', 'primary_email']}, { where: { id: userId } });
         if (!user) {
-            return APIResponseFormat._ResDataNotExists(res, "User not found");
+            return APIResponseFormat._ResUserDoesNotExist(res);
         }else{
             return APIResponseFormat._ResDataFound(res, user);
         }        
