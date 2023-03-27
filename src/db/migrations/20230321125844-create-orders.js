@@ -1,11 +1,9 @@
 'use strict';
-
-const { UUIDV4 } = require('sequelize');
-
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Orders', {
+    await queryInterface.createTable('orders', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -15,7 +13,7 @@ module.exports = {
       customer_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Customers',
+          model: 'customers',
           key: 'id'
         },
         onDelete: 'CASCADE'
@@ -23,7 +21,7 @@ module.exports = {
       delivery_address_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Addresses',
+          model: 'addresses',
           key: 'id'
         },
         onDelete: 'CASCADE'
@@ -31,7 +29,7 @@ module.exports = {
       shipping_address_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Addresses',
+          model: 'addresses',
           key: 'id'
         },
         onDelete: 'CASCADE'
@@ -39,7 +37,7 @@ module.exports = {
       payment_status: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Payment_Status_Masters',
+          model: 'payment_status_master',
           key: 'id'
         },
         onDelete: 'CASCADE'
@@ -47,19 +45,17 @@ module.exports = {
       order_status: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Order_Status_Masters',
+          model: 'order_status_master',
           key: 'id'
         },
         onDelete: 'CASCADE'
       },
       order_number: {
         type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-        defaultValue: UUIDV4()
+        allowNull: true,
       },
       order_date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: false,
         defaultValue: Sequelize.NOW
       },
@@ -69,7 +65,7 @@ module.exports = {
         defaultValue: null
       },
       estimate_delivery_date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: true,
         defaultValue: null
       },
@@ -122,6 +118,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Orders');
+    await queryInterface.dropTable('orders');
   }
 };

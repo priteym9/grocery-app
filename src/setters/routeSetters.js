@@ -4,8 +4,9 @@ const customerRoute = require('../routes/customer/customerRoute.js');
 const orderRoute = require('../routes/order/orderRoute.js');
 const productRoute = require('../routes/product/productRoute.js');
 const adminRoute = require('../routes/admin/adminRoute.js');
-const CryptoJS = require('crypto-js');
-const { sendSuccess, sendError } = require('../utils/sendResponse.js');
+// const { sendSuccess, sendError } = require('../utils/sendResponse.js');
+const APIResponseFormat = require('../utils/APIResponseFormat');
+const { _doEncrypt } = require('../utils/encryption.js');
 
 const router = express.Router();
 
@@ -18,18 +19,19 @@ router.use('/admin', adminRoute);
 router.get('/encryption', (req, res) => {
     const id = req.header('id');
     if (id) {
-        sendSuccess(res, 200, true, "Encrypted Id", CryptoJS.AES.encrypt(id, process.env.SECRET_KEY).toString())
+        const encryptedId = _doEncrypt(id);
+        return APIResponseFormat._ResDataFound(res, encryptedId);
     } else {
-        sendError(res, 400, false, "Id is required")
+        return APIResponseFormat._ResMissingRequiredField(res, "Id");
     }
 });
 
 router.get("/", (req, res) => {
-    sendSuccess(res, 200, true, "Welcome to the Grocery Store API")
+    return APIResponseFormat._ResDataFound(res, "Welcome to the API");
 });
 
 router.use('*', (req, res) => {
-    sendError(res, 404, false, "Route does not exist")
+    return APIResponseFormat._ResRouteNotFound(res);
 });
 
 

@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
-const { sendError } = require('../utils/sendResponse');
+const APIResponseFormat = require('../utils/APIResponseFormat');
 const db = require('../db/models/index');
 const Admin = db.admins;
 
 const validateAdminToken = async (req, res, next) => {
     const token = req.header('token');
     if (!token) {
-        return sendError(res, 400, false, "Token is required")
+        return APIResponseFormat._ResMissingRequiredField(res, "Token is required");
     }
     try {
         const data = jwt.verify(token, process.env.SECRET_KEY);
@@ -18,11 +18,11 @@ const validateAdminToken = async (req, res, next) => {
             }
         }
         else {
-            return sendError(res, 400, false, "Invalid token")
+            return APIResponseFormat._ResInvalidCredentials(res);
         }
         next();
     } catch (err) {
-        return sendError(res, 500, false, "Something went wrong", err)
+        return APIResponseFormat._ResServerError(res, err);
     }
 }
 
