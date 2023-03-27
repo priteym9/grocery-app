@@ -10,10 +10,10 @@ const OrderItem = db.order_items;
 const addOrder = async (req, res) => {
 
     const customer_id = req.userId;
-    const delivery_address_id = _doDecrypt(req.headers('delivery_address_id'));
-    const shipping_address_id = _doDecrypt(req.headers('shipping_address_id')); 
-    const payment_status = _doDecrypt(req.headers('payment_status'));
-    const order_status = _doDecrypt(req.headers('order_status'));
+    const delivery_address_id = _doDecrypt(req.header('delivery_address_id'));
+    const shipping_address_id = _doDecrypt(req.header('shipping_address_id')); 
+    const payment_status = _doDecrypt(req.header('payment_status'));
+    const order_status = _doDecrypt(req.header('order_status'));
      
     const { order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type } = req.body;
 
@@ -24,7 +24,7 @@ const addOrder = async (req, res) => {
         }
         // check headers fields are not empty
         if (!delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
-            return APIResponseFormat._ResMissingRequiredField(res, "Headers fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "Headers field");
         }
 
         // for loop for checking all fields are not empty
