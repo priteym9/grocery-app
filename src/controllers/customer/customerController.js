@@ -94,8 +94,8 @@ const addCustomerAddress = async (req, res) => {
                 return APIResponseFormat._ResDataCreated(res, address);
             }
         }
-    }catch(err){
-        return APIResponseFormat._ResError(res, err);
+    }catch(error){
+        return APIResponseFormat._ResServerError(res, error);
     }
 }
 
