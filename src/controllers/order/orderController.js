@@ -1,5 +1,7 @@
 const db = require('../../db/models/index');
 const Order = db.orders;
+const Addresses = db.addresses;
+const paymentStatusMasters = db.paymentStatusMasters;
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doDecrypt } = require('../../utils/encryption');
 const OrderItem = db.order_items;
@@ -12,33 +14,33 @@ const addOrder = async (req, res) => {
 
         const customer_id = req.userId;
         const delivery_address_id = _doDecrypt(req.header('delivery_address_id'));
-        const shipping_address_id = _doDecrypt(req.header('shipping_address_id'));
+        const billing_address_id = _doDecrypt(req.header('billing_address_id'));
         const payment_status = _doDecrypt(req.header('payment_status'));
         const order_status = _doDecrypt(req.header('order_status'));
 
-        let { order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, order_products } = req.body;
+        let { order_date, special_note, estimate_delivery_date, sub_total, tax_amount, discount_amount, total_amount, paid_amount, payment_type, order_products } = req.body;
 
         // check customer id is not empty
         if (!customer_id) {
             return APIResponseFormat._ResMissingRequiredField(res, "customer_id");
         }
         // check headers fields are not empty
-        if (!delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
+        if (!delivery_address_id || !billing_address_id || !payment_status || !order_status) {
             return APIResponseFormat._ResMissingRequiredField(res, "Headers field");
         }
 
         // check all fields are not empty
-        if (!order_date || !special_note || !estimate_delivery_date || !sub_total || !tax_amout || !discount_amount || !total_amount || !paid_amount || !payment_type) {
+        if (!order_date || !special_note || !estimate_delivery_date || !sub_total || !tax_amount || !discount_amount || !total_amount || !paid_amount || !payment_type) {
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }
 
         // check order_products is not empty
-        if(!order_products || order_products.length == 0){
+        if (!order_products || order_products.length == 0) {
             return APIResponseFormat._ResMissingRequiredField(res, "order_products");
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
-        const newOrder = await Order.create({ order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, shipping_address_id, payment_status, order_status });
+        const newOrder = await Order.create({ order_date, special_note, estimate_delivery_date, sub_total, tax_amount, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, billing_address_id, payment_status, order_status });
 
         if (newOrder) {
             let order_items = [];
@@ -72,7 +74,20 @@ const getOrderById = async (req, res) => {
             include: [
                 {
                     model: OrderItem,
-                    as: 'order_items',
+                    as: 'order_items'
+                },
+                {
+                    model: Addresses,
+                    as: 'delivery_address',
+                },
+                {
+                    model: Addresses,
+                    as: 'billing_address',
+                },
+                {
+                    model: paymentStatusMasters,
+                    as: 'payment_status_masters',
+                    attributes: ['id', 'title']
                 }
             ]
         });
