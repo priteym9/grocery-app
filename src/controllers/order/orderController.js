@@ -20,7 +20,7 @@ const addOrder = async (req, res) => {
 
         // check customer id is not empty
         if (!customer_id) {
-            return APIResponseFormat._ResMissingRequiredField(res, "customer_id is required");
+            return APIResponseFormat._ResMissingRequiredField(res, "customer_id");
         }
         // check headers fields are not empty
         if (!delivery_address_id || !shipping_address_id || !payment_status || !order_status) {
@@ -62,7 +62,7 @@ const getOrderById = async (req, res) => {
 
     // Get Order full details by Order Id
     if (!req.header('order_id')) {
-        return APIResponseFormat._ResMissingRequiredField(res, "order_id is required");
+        return APIResponseFormat._ResMissingRequiredField(res, "order_id");
     }
     try {
         const order = await Order.findOne({

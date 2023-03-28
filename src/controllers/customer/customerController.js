@@ -11,16 +11,12 @@ const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 const updateCustomer = async (req, res) => {
     try{
         const customer_id = req.userId;
-        const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
+        const { first_name, last_name, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         const encryptedPass = _doEncrypt(password);
         if(!customer_id){
             return APIResponseFormat._ResMissingRequiredField(res, "Customer id");
-        }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
+        }else if(!first_name || !last_name || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
-        }else if(primary_mobile_number.length !== 10){
-            return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
-        }else if(primary_email.length < 8 || primary_email.length > 64){
-            return APIResponseFormat._ResMissingRequiredField(res, "Primary email must be between 8 and 64 characters");
         }else if(password.length < 8 || password.length > 64){
             return APIResponseFormat._ResMissingRequiredField(res, "Password must be between 8 and 64 characters");
         }else if(secondary_mobile_number.length !== 10){
@@ -37,9 +33,6 @@ const updateCustomer = async (req, res) => {
                 const customer = await Customer.update({
                     first_name : first_name,
                     last_name : last_name,
-                    primary_mobile_number : primary_mobile_number,
-                    primary_email : primary_email,
-                    username : username,
                     password : encryptedPass,
                     date_of_birth : date_of_birth,
                     secondary_mobile_number : secondary_mobile_number,
@@ -55,7 +48,7 @@ const updateCustomer = async (req, res) => {
             }
         }
     }catch(err){
-        return APIResponseFormat._ResError(res, err);
+        return APIResponseFormat._ResServerError(res, err);
     }   
 }
 
@@ -68,7 +61,7 @@ const addCustomerAddress = async (req, res) => {
         const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark } = req.body;
 
         if(!customer_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }else if(postal_code.length !== 6){
             return APIResponseFormat._ResMissingRequiredField(res, "Postal code must be 6 digits");
         }else {
@@ -139,7 +132,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
 
         if(!username || !password){
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }else{
             const findCustomer = await Customer.findOne({
                 where : {
@@ -175,7 +168,7 @@ const register = async (req , res) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
         if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password){
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }else if(primary_mobile_number.length !== 10){
             return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
         }else if(!regex.test(primary_email)){

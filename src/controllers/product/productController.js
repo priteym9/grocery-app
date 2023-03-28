@@ -10,7 +10,7 @@ const fs = require("fs");
 const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Image");
     }
     let filedata = fs.readFileSync(req.file.path);
     req.file.data = filedata;
@@ -24,7 +24,7 @@ const uploadImage = async (req, res) => {
 const uploadMultipleImages = async (req, res) => {
   try {
     if (!req.files) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Image");
     }
     return APIResponseFormat._ResDataCreated(res, { files: req.files });
   } catch (error) {
@@ -38,19 +38,19 @@ const addProduct = async (req, res) => {
     let { title, amount, discount_type, discount_amount, short_description, description, categoryArrayFromBody } = req.body;
     // check if all fields are filled
     if (!title || !amount || !discount_type || !discount_amount || !short_description || !description || !categoryArrayFromBody) {
-      return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+      return APIResponseFormat._ResMissingRequiredField(res, "All fields");
     }
 
     let categoryArray = JSON.parse(categoryArrayFromBody);
 
     // check categoryArray is not empty
     if (!categoryArray || categoryArray.length === 0) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Category is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category");
     }
 
     // check if image is uploaded or not    
     if (!req.file) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Image");
     }
     let avatar_image = req.file.filename;
 
@@ -92,7 +92,7 @@ const addProduct = async (req, res) => {
 const getProductById = async (req, res) => {
   // Get Product details by Product Id
   if (!req.header("product_id")) {
-    return APIResponseFormat._ResMissingRequiredField(res, "Product Id is required");
+    return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
   }
   try {
     const product = await Product.findOne({
@@ -114,7 +114,7 @@ const getProductById = async (req, res) => {
 const getProductByCategory = async (req, res) => {
   try {
     if (!req.header("category_id")) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Category Id is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category Id");
     }
 
     // check category id is valid or not
@@ -169,17 +169,17 @@ const updateProduct = async (req, res) => {
 
     // check if product id is valid or not
     if (!product_id) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Product Id is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
     }
 
     // check if all fields are empty or not
     if (!title || !amount || !discount_type || !discount_amount || !short_description || !description || !categoryArray) {
-      return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+      return APIResponseFormat._ResMissingRequiredField(res, "All fields");
     }
 
     // check if categoryArray is empty or not
     if (!categoryArray || categoryArray.length === 0) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Category is required");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category");
     }
 
     // check product id is valid or not, if valid then update product details and also update product_category table 
