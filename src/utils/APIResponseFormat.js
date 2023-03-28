@@ -11,7 +11,7 @@ class APIResponseFormat {
 }
 
 const _ResMissingRequiredField = (res, field) => {
-    res.status(400).json(new APIResponseFormat(400, false, `${field} is required`));
+    res.status(400).json(new APIResponseFormat(400, false, `${field} required`));
 }
 
 const _ResInvalidEmail = (res) => {

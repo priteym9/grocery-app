@@ -3,6 +3,7 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 const Order = db.orders;
 const Customer = db.customers;
 const Addresses = db.addresses;
+const OrderItem = db.order_items;
 const jwt = require('jsonwebtoken');
 const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 
@@ -13,9 +14,9 @@ const updateCustomer = async (req, res) => {
         const { first_name, last_name, primary_mobile_number, primary_email, username, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         const encryptedPass = _doEncrypt(password);
         if(!customer_id){
-            return APIResponseFormat._ResMissingRequiredField(res, "Customer id is required");
+            return APIResponseFormat._ResMissingRequiredField(res, "Customer id");
         }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }else if(primary_mobile_number.length !== 10){
             return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
         }else if(primary_email.length < 8 || primary_email.length > 64){
@@ -112,6 +113,12 @@ const getCustomerAllOrders = async (req, res) => {
                 {
                     model: Order,
                     as: "orders",
+                }
+            ],
+            include: [
+                {
+                    model : OrderItem ,
+                    as : "order_items"
                 }
             ]
         });

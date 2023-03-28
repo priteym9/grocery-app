@@ -31,8 +31,8 @@ const addCategory = async (req, res) => {
         .replace(/[\s_-]+/g, '-')
         .replace(/^-+|-+$/g, '')
     try {
-        if (!title) return APIResponseFormat._ResMissingRequiredField(res, "title is required");
-        if (!parent_id) return APIResponseFormat._ResMissingRequiredField(res, "parent_id is required");
+        if (!title) return APIResponseFormat._ResMissingRequiredField(res, "title");
+        if (!parent_id) return APIResponseFormat._ResMissingRequiredField(res, "parent_id");
         // check if parent_id is a number
         if (isNaN(parent_id)) return APIResponseFormat._ResMissingRequiredField(res, "parent_id must be a number")
 
@@ -64,7 +64,7 @@ const updateCategory = async (req, res) => {
         const { title, parent_id } = req.body;
 
         if (!id || !title || !parent_id) {
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         } else {
             const findCategory = await Categories.findOne({
                 where: {

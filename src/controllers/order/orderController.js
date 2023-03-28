@@ -8,16 +8,16 @@ const OrderItem = db.order_items;
 
 // add order with items
 const addOrder = async (req, res) => {
-
-    const customer_id = req.userId;
-    const delivery_address_id = _doDecrypt(req.header('delivery_address_id'));
-    const shipping_address_id = _doDecrypt(req.header('shipping_address_id')); 
-    const payment_status = _doDecrypt(req.header('payment_status'));
-    const order_status = _doDecrypt(req.header('order_status'));
-     
-    const { order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type } = req.body;
-
     try {
+
+        const customer_id = req.userId;
+        const delivery_address_id = _doDecrypt(req.header('delivery_address_id'));
+        const shipping_address_id = _doDecrypt(req.header('shipping_address_id'));
+        const payment_status = _doDecrypt(req.header('payment_status'));
+        const order_status = _doDecrypt(req.header('order_status'));
+
+        let { order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, order_products } = req.body;
+
         // check customer id is not empty
         if (!customer_id) {
             return APIResponseFormat._ResMissingRequiredField(res, "customer_id is required");
@@ -27,13 +27,18 @@ const addOrder = async (req, res) => {
             return APIResponseFormat._ResMissingRequiredField(res, "Headers field");
         }
 
-        // for loop for checking all fields are not empty
-        for (let key in req.body) {
-            if (req.body[key] === "") return APIResponseFormat._ResMissingRequiredField(res, key);
+        // check all fields are not empty
+        if (!order_date || !special_note || !estimate_delivery_date || !sub_total || !tax_amout || !discount_amount || !total_amount || !paid_amount || !payment_type) {
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
+        }
+
+        // check order_products is not empty
+        if(!order_products || order_products.length == 0){
+            return APIResponseFormat._ResMissingRequiredField(res, "order_products");
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
-        const newOrder = await Order.create({  order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, shipping_address_id, payment_status, order_status });
+        const newOrder = await Order.create({ order_date, special_note, estimate_delivery_date, sub_total, tax_amout, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, shipping_address_id, payment_status, order_status });
 
         if (newOrder) {
             let order_items = [];
@@ -44,7 +49,7 @@ const addOrder = async (req, res) => {
             });
             const newOrderItems = await OrderItem.bulkCreate(order_items);
             if (newOrderItems) {
-                return APIResponseFormat._ResDataCreated(res,newOrder);
+                return APIResponseFormat._ResDataCreated(res, newOrder);
             }
         }
     } catch (error) {
@@ -54,29 +59,29 @@ const addOrder = async (req, res) => {
 
 // get order by id
 const getOrderById = async (req, res) => {
-    
+
     // Get Order full details by Order Id
-    if(!req.header('order_id')){
+    if (!req.header('order_id')) {
         return APIResponseFormat._ResMissingRequiredField(res, "order_id is required");
     }
-    try{
+    try {
         const order = await Order.findOne({
             where: {
                 id: _doDecrypt(req.header('order_id'))
-            } ,
+            },
             include: [
                 {
                     model: OrderItem,
                     as: 'order_items',
                 }
-            ]   
+            ]
         });
-        if(order){
+        if (order) {
             return APIResponseFormat._ResDataFound(res, order);
-        }else{
+        } else {
             return APIResponseFormat._ResDataNotFound(res, "Order not found");
         }
-    }catch(error){
+    } catch (error) {
         return APIResponseFormat._ResServerError(res, error);
     }
 }

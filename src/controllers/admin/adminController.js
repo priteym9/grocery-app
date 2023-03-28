@@ -40,12 +40,11 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         let { email, password } = req.body;
-        // check if all fields are provided for each loop
-        for (let key in req.body) {
-            if (!req.body[key]) {
-                return APIResponseFormat._ResMissingRequiredField(res, key)
-            }
+        // check if all parameters are provided
+        if (!email || !password) {
+            return APIResponseFormat._ResMissingRequiredField(res, "email or password")
         }
+
         // check if email is valid
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
         if (!regex.test(email)) {
