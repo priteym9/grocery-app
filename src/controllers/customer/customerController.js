@@ -14,9 +14,13 @@ const updateCustomer = async (req, res) => {
         const { first_name, last_name, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         const encryptedPass = _doEncrypt(password);
         if(!customer_id){
-            return APIResponseFormat._ResMissingRequiredField(res, "Customer id");
-        }else if(!first_name || !last_name || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
-            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
+            return APIResponseFormat._ResMissingRequiredField(res, "Customer id is required");
+        }else if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields are required");
+        }else if(primary_mobile_number.length !== 10){
+            return APIResponseFormat._ResMissingRequiredField(res, "Primary mobile number must be 10 digits");
+        }else if(primary_email.length < 8 || primary_email.length > 64){
+            return APIResponseFormat._ResMissingRequiredField(res, "Primary email must be between 8 and 64 characters");
         }else if(password.length < 8 || password.length > 64){
             return APIResponseFormat._ResMissingRequiredField(res, "Password must be between 8 and 64 characters");
         }else if(secondary_mobile_number.length !== 10){
