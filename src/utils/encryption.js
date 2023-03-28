@@ -9,16 +9,22 @@ const _doEncrypt = (id) => {
             iv: _iv,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
-     });
+     }).toString();
 
-    return _encrypted.toString();
+     // replace the / in the encrypted string with a _ to avoid url encoding issues
+
+     _encrypted = _encrypted.replace("/", "_");
+
+    return _encrypted;
 };
 
 const _doDecrypt = (id) => {
     let _key = CryptoJS.SHA256(process.env.SECRET_KEY);
     let _iv = CryptoJS.enc.Base64.parse(" ");
 
-    // console.log(_key, _iv);
+    // replace the _ in the encrypted string with a / to avoid url encoding issues
+
+    id = id.replace("_", "/");
 
     let _decrypted = CryptoJS.AES.decrypt(id, _key, {
             keySize: 32,
@@ -26,8 +32,6 @@ const _doDecrypt = (id) => {
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
     }).toString(CryptoJS.enc.Utf8);
-
-    console.log(_decrypted);
 
     return _decrypted;
 };

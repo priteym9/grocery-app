@@ -7,7 +7,7 @@ const adminRoute = require('../routes/admin/adminRoute.js');
 const paymentStatusRoute = require('../routes/paymentStatus/paymentStatusRoute.js');
 // const { sendSuccess, sendError } = require('../utils/sendResponse.js');
 const APIResponseFormat = require('../utils/APIResponseFormat');
-const { _doEncrypt } = require('../utils/encryption.js');
+const { _doEncrypt , _doDecrypt } = require('../utils/encryption.js');
 
 const router = express.Router();
 
@@ -23,6 +23,16 @@ router.get('/encryption', (req, res) => {
     if (id) {
         const encryptedId = _doEncrypt(id);
         return APIResponseFormat._ResDataFound(res, encryptedId);
+    } else {
+        return APIResponseFormat._ResMissingRequiredField(res, "Id");
+    }
+});
+
+router.get('/decryption', (req, res) => {
+    const id = req.header('id');
+    if (id) {
+        const decryptedId = _doDecrypt(id);
+        return APIResponseFormat._ResDataFound(res, decryptedId);
     } else {
         return APIResponseFormat._ResMissingRequiredField(res, "Id");
     }
