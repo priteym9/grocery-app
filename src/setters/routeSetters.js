@@ -4,6 +4,7 @@ const customerRoute = require('../routes/customer/customerRoute.js');
 const orderRoute = require('../routes/order/orderRoute.js');
 const productRoute = require('../routes/product/productRoute.js');
 const adminRoute = require('../routes/admin/adminRoute.js');
+const paymentStatusRoute = require('../routes/paymentStatus/paymentStatusRoute.js');
 // const { sendSuccess, sendError } = require('../utils/sendResponse.js');
 const APIResponseFormat = require('../utils/APIResponseFormat');
 const { _doEncrypt } = require('../utils/encryption.js');
@@ -14,6 +15,7 @@ router.use('/category', categoryRoute);
 router.use('/customer', customerRoute);
 router.use('/order', orderRoute);
 router.use('/product', productRoute);
+router.use('/payment-status' , paymentStatusRoute);
 router.use('/admin', adminRoute);
 
 router.get('/encryption', (req, res) => {
