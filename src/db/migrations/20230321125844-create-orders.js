@@ -26,7 +26,7 @@ module.exports = {
         },
         onDelete: 'CASCADE'
       },
-      shipping_address_id: {
+      billing_address_id: {
         type: Sequelize.INTEGER,
         references: {
           model: 'addresses',

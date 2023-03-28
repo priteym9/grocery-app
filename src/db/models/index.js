@@ -61,8 +61,8 @@ db.products = require('./products')(sequelize, Sequelize);
 db.product_categories = require('./product_categories')(sequelize, Sequelize);
 db.customers = require('./customers')(sequelize, Sequelize);
 db.addresses = require('./addresses')(sequelize, Sequelize);
-db.paymentStatusMaster = require('./payment_status_master')(sequelize, Sequelize);
-db.orderStatusMaster = require('./order_status_master')(sequelize, Sequelize);
+db.paymentStatusMasters = require('./payment_status_masters')(sequelize, Sequelize);
+db.orderStatusMasters = require('./order_status_masters')(sequelize, Sequelize);
 db.orders = require('./orders')(sequelize, Sequelize);
 db.order_items = require('./order_items')(sequelize, Sequelize);
 db.admins = require('./admins')(sequelize, Sequelize);
@@ -80,11 +80,11 @@ db.product_categories.belongsTo(db.categories, { as: 'category', foreignKey: 'ca
 db.customers.hasMany(db.addresses, { as: 'addresses', foreignKey: 'customer_id' });
 db.addresses.belongsTo(db.customers, { as: 'customer', foreignKey: 'customer_id' });
 
-db.paymentStatusMaster.hasMany(db.orders, { as: 'orders', foreignKey: 'payment_status' });
-db.orders.belongsTo(db.paymentStatusMaster, { as: 'payment_status_master', foreignKey: 'payment_status' });
+db.paymentStatusMasters.hasMany(db.orders, { as: 'orders', foreignKey: 'payment_status' });
+db.orders.belongsTo(db.paymentStatusMasters, { as: 'payment_status_masters', foreignKey: 'payment_status' });
 
-db.orderStatusMaster.hasMany(db.orders, { as: 'orders', foreignKey: 'order_status' });
-db.orders.belongsTo(db.orderStatusMaster, { as: 'order_status_master', foreignKey: 'order_status' });
+db.orderStatusMasters.hasMany(db.orders, { as: 'orders', foreignKey: 'order_status' });
+db.orders.belongsTo(db.orderStatusMasters, { as: 'order_status_masters', foreignKey: 'order_status' });
 
 db.customers.hasMany(db.orders, { as: 'orders', foreignKey: 'customer_id' });
 db.orders.belongsTo(db.customers, { as: 'customer', foreignKey: 'customer_id' });
@@ -92,8 +92,8 @@ db.orders.belongsTo(db.customers, { as: 'customer', foreignKey: 'customer_id' })
 db.addresses.hasMany(db.orders, { as: 'orders_', foreignKey: 'delivery_address_id' });
 db.orders.belongsTo(db.addresses, { as: 'delivery_address', foreignKey: 'delivery_address_id' });
 
-db.addresses.hasMany(db.orders, { as: 'orders', foreignKey: 'shipping_address_id' });
-db.orders.belongsTo(db.addresses, { as: 'shipping_address', foreignKey: 'shipping_address_id' });
+db.addresses.hasMany(db.orders, { as: 'orders', foreignKey: 'billing_address_id' });
+db.orders.belongsTo(db.addresses, { as: 'billing_address', foreignKey: 'billing_address_id' });
 
 db.orders.hasMany(db.order_items, { as: 'order_items', foreignKey: 'order_id' });
 db.order_items.belongsTo(db.orders, { as: 'order', foreignKey: 'order_id' });
