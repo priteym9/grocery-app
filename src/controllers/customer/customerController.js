@@ -107,12 +107,6 @@ const getCustomerAllOrders = async (req, res) => {
                     model: Order,
                     as: "orders",
                 }
-            ],
-            include: [
-                {
-                    model : OrderItem ,
-                    as : "order_items"
-                }
             ]
         });
         if(customer){
