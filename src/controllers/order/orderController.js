@@ -63,7 +63,13 @@ const getOrderById = async (req, res) => {
         const order = await Order.findOne({
             where: {
                 id: _doDecrypt(req.header('order_id'))
-            }
+            } ,
+            include: [
+                {
+                    model: OrderItem,
+                    as: 'order_items',
+                }
+            ]   
         });
         if(order){
             return APIResponseFormat._ResDataFound(res, order);
