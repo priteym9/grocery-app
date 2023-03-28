@@ -74,8 +74,9 @@ const getOrderById = async (req, res) => {
             include: [
                 {
                     model: OrderItem,
-                    as: 'order_items'
-                },
+                    as: 'order_items',
+                    attributes: ['id' , 'order_id','product_id' , 'product_name' , 'qty' , 'product_amount' , 'discount_type' , 'discount_amount']
+                } ,
                 {
                     model: Addresses,
                     as: 'delivery_address',
@@ -83,7 +84,7 @@ const getOrderById = async (req, res) => {
                 {
                     model: Addresses,
                     as: 'billing_address',
-                },
+                } ,
                 {
                     model: paymentStatusMasters,
                     as: 'payment_status_masters',
