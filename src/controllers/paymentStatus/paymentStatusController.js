@@ -1,5 +1,5 @@
 const db = require('../../db/models/index');
-const Payment_Status_Master = db.paymentStatusMaster
+const Payment_Status_Masters = db.paymentStatusMasters
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 
 
@@ -7,7 +7,7 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 
 const getMasterData = async (req, res) => {
     try {
-        const paymentMaster = await Payment_Status_Master.findAll({
+        const paymentMaster = await Payment_Status_Masters.findAll({
             attributes: ['id', 'title']
         });
         if(paymentMaster.length > 0){
