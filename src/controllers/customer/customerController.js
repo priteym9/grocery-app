@@ -3,7 +3,7 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 const Order = db.orders;
 const Customer = db.customers;
 const Addresses = db.addresses;
-const OrderItem = db.order_items;
+const { Op} = require("sequelize"); 
 const jwt = require('jsonwebtoken');
 const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 
@@ -169,11 +169,13 @@ const register = async (req , res) => {
             return APIResponseFormat._ResInvalidEmail(res);
         }else{
             const findCustomer = await Customer.findOne({
-                where : {
-                    username : username,
-                    primary_email : primary_email,
-                    primary_mobile_number : primary_mobile_number
-                }
+               where :{
+                   [Op.or] : [
+                          { primary_mobile_number : primary_mobile_number },
+                            { primary_email : primary_email },
+                            { username : username }
+                   ]
+               }
             });
             if(findCustomer){
                 return APIResponseFormat._ResUserAlreadyExists(res);
