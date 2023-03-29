@@ -2,9 +2,7 @@ const express = require('express');
 const customerController = require("../../controllers/customer/customerController.js");
 const validateUserToken = require('../../middlewares/validateUserToken.js');
 
-
 const router = express.Router();
-
 
 router.post('/login', customerController.login)
 router.post('/register', customerController.register)
@@ -15,3 +13,4 @@ router.put('/update-customer', validateUserToken, customerController.updateCusto
 router.put('/changePassword', validateUserToken, customerController.changePassword)
 
 module.exports = router;
+

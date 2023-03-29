@@ -14,8 +14,8 @@ const _doEncrypt = (id) => {
      // replace the / in the encrypted string with a _ to avoid url encoding issues
 
      _encrypted = _encrypted.replace(/\//g, "_");
+     _encrypted = _encrypted.replace(/\+/g, "-");
 
-     console.log(_encrypted);
 
     return _encrypted;
 };
@@ -27,6 +27,7 @@ const _doDecrypt = (id) => {
     // replace the _ in the encrypted string with a / to avoid url encoding issues
 
     id = id.replace(/_/g, "/");
+    id = id.replace(/-/g, "+");
 
     let _decrypted = CryptoJS.AES.decrypt(id, _key, {
             keySize: 32,
