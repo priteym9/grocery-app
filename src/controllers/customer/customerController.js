@@ -201,7 +201,15 @@ const register = async (req , res) => {
 const getUserDetails = async (req, res) => {
     try {
         let userId = req.userId;
-        const user = await Customer.findOne({attributes: ['first_name', 'last_name', 'primary_email']}, { where: { id: userId } });
+        console.log(userId);
+        // Get Customer's details by Customer Id using sequelize
+        const user = await Customer.findOne({
+            where: {
+                id: userId
+            },
+            attributes : ['first_name', 'last_name', 'primary_mobile_number', 'primary_email', 'username']
+        });
+        // console.log(user);
         if (!user) {
             return APIResponseFormat._ResUserDoesNotExist(res);
         }else{
