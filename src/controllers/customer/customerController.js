@@ -201,8 +201,6 @@ const register = async (req , res) => {
 const getUserDetails = async (req, res) => {
     try {
         let userId = req.userId;
-        console.log(userId);
-        // Get Customer's details by Customer Id using sequelize
         const user = await Customer.findOne({
             where: {
                 id: userId
