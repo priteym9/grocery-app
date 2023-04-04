@@ -37,7 +37,7 @@ module.exports = {
       payment_status: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'payment_status_master',
+          model: 'payment_status_masters',
           key: 'id'
         },
         onDelete: 'CASCADE'
@@ -45,7 +45,7 @@ module.exports = {
       order_status: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'order_status_master',
+          model: 'order_status_masters',
           key: 'id'
         },
         onDelete: 'CASCADE'
