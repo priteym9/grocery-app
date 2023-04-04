@@ -132,7 +132,6 @@ const login = async (req, res) => {
                 where : {
                     username : username,
                 } ,
-                attributes : ['id', 'first_name', 'last_name', 'username', 'password']
             });
             if(!findCustomer){
                 return APIResponseFormat._ResUserDoesNotExist(res);
@@ -142,7 +141,14 @@ const login = async (req, res) => {
                     const token = jwt.sign({ id: findCustomer.id }, process.env.SECRET_KEY, {
                         expiresIn: 86400 // 24 hours
                     });
-                    return APIResponseFormat._ResLoginSuccess(res, token);
+                    return APIResponseFormat._ResLoginSuccess(res, {
+                        user : {
+                            first_name : findCustomer.first_name,
+                            last_name : findCustomer.last_name,
+                            username : findCustomer.username
+                        },
+                        token : token
+                    });
                 }else{
                     return APIResponseFormat._ResPasswordIncorrect(res);
                 }
