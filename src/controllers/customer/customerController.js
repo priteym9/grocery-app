@@ -367,5 +367,7 @@ module.exports = {
     getUserDetails,
     updateCustomer,
     changePassword ,
-    updateCustomerAddress
+    updateCustomerAddress ,
+    deleteAddress
+    
 }
