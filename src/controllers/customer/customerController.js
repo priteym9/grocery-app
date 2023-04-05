@@ -90,6 +90,65 @@ const addCustomerAddress = async (req, res) => {
     }
 }
 
+const updateCustomerAddress = async (req, res) => {
+    try{
+        const customer_id = req.userId;
+        const address_id = _doDecrypt(req.header('address_id'));
+        if(!address_id){
+            return APIResponseFormat._ResMissingRequiredField(res, "Address id");
+        }
+        const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark, tag } = req.body;
+        if(!customer_id || !address_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
+        }else if(postal_code.length !== 6){
+            return APIResponseFormat._ResMissingRequiredField(res, "Postal code must be 6 digits");
+        }else {
+            const findCustomer = await Customer.findOne({
+                where : {
+                    id : customer_id
+                }
+            });
+            
+            if(!findCustomer){
+                return APIResponseFormat._ResUserDoesNotExist(res);
+            }else{
+                // check if address belongs to customer
+                const findAddress = await Addresses.findAll({
+                    where : {
+                        [Op.and] : [
+                            { id : address_id },
+                            { customer_id : customer_id }
+                        ]
+                    }
+                });
+                if(!findAddress){
+                    return APIResponseFormat._ResDataNotExists(res, "Address id does not belong to this customer");
+                }else{
+                    const address = await Addresses.update({
+                        address_line_1,
+                        address_line_2,
+                        area,
+                        city,
+                        state,
+                        country,
+                        postal_code,
+                        landmark,
+                        tag
+                    }, {
+                        where : {
+                            id : address_id
+                        }
+                    });
+                    return APIResponseFormat._ResDataUpdated(res, address);
+                }
+            }
+        }
+    }catch(error){
+        return APIResponseFormat._ResServerError(res, error);
+    }
+}
+
+
 // get customers all order by customer id
 const getCustomerAllOrders = async (req, res) => {
     try{
@@ -269,5 +328,6 @@ module.exports = {
     register,
     getUserDetails,
     updateCustomer,
-    changePassword    
+    changePassword ,
+    updateCustomerAddress
 }

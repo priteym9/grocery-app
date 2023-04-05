@@ -11,6 +11,7 @@ router.post('/add-customer-address', validateUserToken, customerController.addCu
 router.get('/get-customer-all-orders', validateUserToken, customerController.getCustomerAllOrders)
 router.put('/update-customer', validateUserToken, customerController.updateCustomer)
 router.put('/changePassword', validateUserToken, customerController.changePassword)
+router.put('/update-customer-address', validateUserToken, customerController.updateCustomerAddress)
 
 module.exports = router;
 
