@@ -304,7 +304,6 @@ const getUserDetails = async (req, res) => {
             where: {
                 id: userId
             },
-            attributes : ['first_name', 'last_name', 'primary_mobile_number', 'primary_email', 'username'] ,
             include: [
                 {
                     model: Addresses,
