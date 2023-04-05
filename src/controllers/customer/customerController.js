@@ -93,7 +93,8 @@ const addCustomerAddress = async (req, res) => {
 const updateCustomerAddress = async (req, res) => {
     try{
         const customer_id = req.userId;
-        const address_id = _doDecrypt(req.header('address_id'));
+        let address_id = req.header('address_id');
+        address_id = _doDecrypt(address_id);
         if(!address_id){
             return APIResponseFormat._ResMissingRequiredField(res, "Address id");
         }
@@ -108,12 +109,11 @@ const updateCustomerAddress = async (req, res) => {
                     id : customer_id
                 }
             });
-            
             if(!findCustomer){
                 return APIResponseFormat._ResUserDoesNotExist(res);
             }else{
                 // check if address belongs to customer
-                const findAddress = await Addresses.findAll({
+                const findAddress = await Addresses.findOne({
                     where : {
                         [Op.and] : [
                             { id : address_id },
