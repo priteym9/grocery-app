@@ -54,7 +54,7 @@ const addCustomerAddress = async (req, res) => {
     // add validationss on address
     try{
         const customer_id = req.userId;
-        const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark } = req.body;
+        const { address_line_1 , address_line_2 , area , city , state , country , postal_code , landmark, tag } = req.body;
 
         if(!customer_id || !address_line_1 || !address_line_2 || !area || !city || !state || !country || !postal_code || !landmark){
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
@@ -79,7 +79,8 @@ const addCustomerAddress = async (req, res) => {
                     state,
                     country,
                     postal_code,
-                    landmark
+                    landmark,
+                    tag
                 });
                 return APIResponseFormat._ResDataCreated(res, address);
             }
