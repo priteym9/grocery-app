@@ -15,6 +15,8 @@ const validateUserToken = async (req, res, next) => {
             const user = await Customer.findOne({ where: { id: data.id } });
             if (user) {
                 req.userId = user.id;
+            }else {
+                return APIResponseFormat._ResDataNotExists(res , "User not found");
             }
         }
         else {

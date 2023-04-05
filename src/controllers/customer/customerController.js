@@ -3,7 +3,7 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 const Order = db.orders;
 const Customer = db.customers;
 const Addresses = db.addresses;
-const { Op} = require("sequelize"); 
+const {Op} = require("sequelize"); 
 const jwt = require('jsonwebtoken');
 const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 
@@ -11,14 +11,11 @@ const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
 const updateCustomer = async (req, res) => {
     try{
         const customer_id = req.userId;
-        const { first_name, last_name, password, date_of_birth, secondary_mobile_number, secondary_email } = req.body;
-        const encryptedPass = _doEncrypt(password);
+        const { first_name, last_name,  date_of_birth, secondary_mobile_number, secondary_email } = req.body;
         if(!customer_id){
             return APIResponseFormat._ResMissingRequiredField(res, "Customer id");
-        }else if(!first_name || !last_name || !password || !date_of_birth || !secondary_mobile_number || !secondary_email){
+        }else if(!first_name || !last_name || !date_of_birth || !secondary_mobile_number || !secondary_email){
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
-        }else if(password.length < 8 || password.length > 64){
-            return APIResponseFormat._ResMissingRequiredField(res, "Password must be between 8 and 64 characters");
         }else if(secondary_mobile_number.length !== 10){
             return APIResponseFormat._ResMissingRequiredField(res, "Secondary mobile number must be 10 digits");
         }else if(secondary_email.length < 8 || secondary_email.length > 64){
@@ -33,7 +30,6 @@ const updateCustomer = async (req, res) => {
                 const customer = await Customer.update({
                     first_name : first_name,
                     last_name : last_name,
-                    password : encryptedPass,
                     date_of_birth : date_of_birth,
                     secondary_mobile_number : secondary_mobile_number,
                     secondary_email : secondary_email
@@ -160,7 +156,6 @@ const register = async (req , res) => {
         const { first_name , last_name , primary_mobile_number , primary_email , username , password  } = req.body;
         const encryptedPass = _doEncrypt(password);
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
         if(!first_name || !last_name || !primary_mobile_number || !primary_email || !username || !password){
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
         }else if(primary_mobile_number.length !== 10){

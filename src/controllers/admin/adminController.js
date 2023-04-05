@@ -75,7 +75,7 @@ const login = async (req, res) => {
 const getAdminDetails = async (req, res) => {
     try {
         let adminId = req.adminId;
-        const admin = await Admin.findOne({attributes: ['first_name', 'last_name', 'email']}, { where: { id: adminId } });
+        const admin = await Admin.findOne({ where: { id: adminId } } );
         if (!admin) {
             return APIResponseFormat._ResAdminDoesNotExist(res)
         }else{

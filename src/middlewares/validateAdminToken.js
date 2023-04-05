@@ -15,6 +15,8 @@ const validateAdminToken = async (req, res, next) => {
             const admin = await Admin.findOne({ where: { id: data.id } });
             if (admin) {
                 req.adminId = data.id;
+            }else {
+                return APIResponseFormat._ResDataNotExists(res , "Admin not found");
             }
         }
         else {
