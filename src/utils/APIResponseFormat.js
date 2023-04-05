@@ -99,6 +99,11 @@ const _ResRouteNotFound = (res) => {
     res.status(404).json(new APIResponseFormat(404, false, "Route not found"));
 }
 
+const _ResDataDeleted = (res , data) => {
+    res.status(200).json(new APIResponseFormat(200, true, "Data deleted" , data));
+}
+
+
 
 
 
@@ -126,7 +131,8 @@ module.exports = {
     _ResDataNotExists ,
     _ResAdminLoginSuccess ,
     _ResRouteNotFound ,
-    _ResAdminRegisterSuccess
+    _ResAdminRegisterSuccess,
+    _ResDataDeleted
 
 }
 

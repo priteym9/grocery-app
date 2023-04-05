@@ -149,6 +149,44 @@ const updateCustomerAddress = async (req, res) => {
 }
 
 
+const deleteAddress = async (req, res) => {
+    try{
+        const customer_id = req.userId;
+        const address_id  = _doDecrypt(req.header('address_id'));
+        if(!customer_id || !address_id){
+            return APIResponseFormat._ResMissingRequiredField(res, "All fields");
+        }else{
+            const findCustomer = await Customer.findOne({
+                where : {
+                    id : customer_id
+                }
+            });
+            if(!findCustomer){
+                return APIResponseFormat._ResUserDoesNotExist(res);
+            }else{
+                const findAddress = await Addresses.findOne({
+                    where : {
+                        id : address_id
+                    }
+                });
+                if(!findAddress){
+                    return APIResponseFormat._ResDataNotFound(res);
+                }else{
+                    const address = await Addresses.destroy({
+                        where : {
+                            id : address_id
+                        }
+                    });
+                    return APIResponseFormat._ResDataDeleted(res, address);
+                }
+            }
+        }
+    }catch(error){
+        return APIResponseFormat._ResServerError(res, error);
+    }
+}
+
+
 // get customers all order by customer id
 const getCustomerAllOrders = async (req, res) => {
     try{

@@ -12,6 +12,7 @@ router.get('/get-customer-all-orders', validateUserToken, customerController.get
 router.put('/update-customer', validateUserToken, customerController.updateCustomer)
 router.put('/changePassword', validateUserToken, customerController.changePassword)
 router.put('/update-customer-address', validateUserToken, customerController.updateCustomerAddress)
+router.delete('/delete-customer-address', validateUserToken, customerController.deleteAddress)
 
 module.exports = router;
 
