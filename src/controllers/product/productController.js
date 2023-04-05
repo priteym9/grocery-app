@@ -254,11 +254,26 @@ const updateProduct = async (req, res) => {
   }
 };
 
+const getAllProducts = async (req , res) => {
+  try{
+    const products = await Product.findAll();
+    if(products.length > 0){
+      return APIResponseFormat._ResDataFound(res, products);
+    }else{
+      return APIResponseFormat._ResDataNotFound(res);
+    }
+
+  }catch(error){
+    return APIResponseFormat._ResServerError(res, error);
+  }
+}
+
 module.exports = {
   getProductById,
   getProductByCategory,
   updateProduct,
   addProduct,
   uploadImage,
-  uploadMultipleImages
+  uploadMultipleImages,
+  getAllProducts
 };

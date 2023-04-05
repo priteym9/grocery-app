@@ -34,5 +34,6 @@ router.get('/get-product-by-id', productController.getProductById)
 router.get('/get-product-by-category-id', productController.getProductByCategory)
 router.put('/update-product', validateAdminToken, productController.updateProduct)
 router.post('/add-product', validateAdminToken, upload.single('avatar_image'), productController.addProduct)
+router.get('/get-all-products', productController.getAllProducts)
 
 module.exports = router;
