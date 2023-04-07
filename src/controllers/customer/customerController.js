@@ -3,6 +3,8 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 const Order = db.orders;
 const Customer = db.customers;
 const Addresses = db.addresses;
+const OrderItems = db.order_items;
+const Product = db.products;
 const {Op} = require("sequelize"); 
 const jwt = require('jsonwebtoken');
 const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
@@ -196,12 +198,26 @@ const getCustomerAllOrders = async (req, res) => {
             where: {
                 id: customer_id
             },
+            // Order Details with Order Items
             include: [
                 {
-                    model: Order,
-                    as: "orders",
+                    model: Order ,
+                    as: 'orders',
+                    include: [
+                        {
+                            model: OrderItems,
+                            as: 'order_items',
+                            // include: [
+                            //     {
+                            //         model: Product,
+                            //         as: 'product',
+                            //     }
+                            // ]
+                        }
+                    ]
                 }
             ]
+            
         });
         if(customer){
             return APIResponseFormat._ResDataFound(res, customer);
