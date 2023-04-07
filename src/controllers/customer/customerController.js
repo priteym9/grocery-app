@@ -207,12 +207,12 @@ const getCustomerAllOrders = async (req, res) => {
                         {
                             model: OrderItems,
                             as: 'order_items',
-                            // include: [
-                            //     {
-                            //         model: Product,
-                            //         as: 'product',
-                            //     }
-                            // ]
+                            include: [
+                                {
+                                    model: Product,
+                                    as: 'product',
+                                }
+                            ]
                         }
                     ]
                 }
