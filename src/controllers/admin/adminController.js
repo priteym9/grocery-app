@@ -2,7 +2,7 @@ const db = require('../../db/models/index');
 const Admin = db.admins;
 const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
-const { _doEncrypt , _doDecrypt } = require('../../utils/encryption');
+const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
 
 const register = async (req, res) => {
     // admin registration logic    
@@ -65,7 +65,7 @@ const login = async (req, res) => {
         const adminData = { id: admin.id }
         // create token
         const authToken = jwt.sign(adminData, process.env.SECRET_KEY, { expiresIn: "12h" });
-        return APIResponseFormat._ResAdminLoginSuccess(res, {admin , authToken })
+        return APIResponseFormat._ResAdminLoginSuccess(res, { id: admin.id, first_name: admin.first_name, last_name: admin.last_name, email: admin.email, token: authToken })
 
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error)
@@ -75,14 +75,14 @@ const login = async (req, res) => {
 const getAdminDetails = async (req, res) => {
     try {
         let adminId = req.adminId;
-        const admin = await Admin.findOne({ where: { id: adminId } } );
+        const admin = await Admin.findOne({ where: { id: adminId } });
         if (!admin) {
             return APIResponseFormat._ResAdminDoesNotExist(res)
-        }else{
+        } else {
             return APIResponseFormat._ResAdminDetails(res, admin)
-        }        
+        }
     } catch (error) {
-        return APIResponseFormat._ResServerError(res, error)       
+        return APIResponseFormat._ResServerError(res, error)
     }
 }
 
