@@ -4,17 +4,38 @@ const APIResponseFormat = require("../../utils/APIResponseFormat");
 const Category = db.categories;
 const Product = db.products;
 const ProductCategory = db.product_categories;
-const fs = require("fs");
+const path = require('path');
+
 
 // make a function to save the file in public/products folder and get the file name
 const uploadImage = async (req, res) => {
   try {
-    if (!req.file) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image");
+    // if files are not uploaded then return error
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Avatar Image");
     }
-    let filedata = fs.readFileSync(req.file.path);
-    req.file.data = filedata;
-    return APIResponseFormat._ResDataCreated(res, { file: req.file });
+
+    let file = req.files.avatar_image;
+    // if file size is greater than 5MB then return error
+    if (file.size > 5 * 1024 * 1024) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image size should be less than 5MB");
+    }
+
+    // if file type is not jpeg, jpg, png or gif then return error
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.mimetype)) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image should be jpeg, jpg, png or gif");
+    }
+
+    // move the file to public/products folder
+    let savePath = path.join(__dirname, '../', '../', 'public', 'products', '/');
+    let fileName = Date.now() + "-" + file.name.replace(/\s/g, '');
+    file.mv(savePath + fileName, (err) => {
+      if (err) {
+        return APIResponseFormat._ResImageError(res, err);
+      }
+    });
+
+    return APIResponseFormat._ResDataCreated(res, { fileName: fileName });
   } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
@@ -23,10 +44,36 @@ const uploadImage = async (req, res) => {
 // make an API for upload multiple images
 const uploadMultipleImages = async (req, res) => {
   try {
-    if (!req.files) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image");
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return APIResponseFormat._ResMissingRequiredField(res, "images");
     }
-    return APIResponseFormat._ResDataCreated(res, { files: req.files });
+
+    let files = req.files.images;
+    let savePath = path.join(__dirname, '../', '../', 'public', 'products', '/');
+    let fileNameArray = [];
+
+    files.forEach((file) => {
+      // if file size is greater than 50MB then return error
+      if (file.size > 5 * 1024 * 1024) {
+        return APIResponseFormat._ResImageError(res, "Image size should be less than 5MB");
+      }
+
+      // if file type is not jpeg, jpg, png or gif then return error
+      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.mimetype)) {
+        return APIResponseFormat._ResImageError(res, "All files should be jpeg, jpg, png or gif");
+      }
+
+      let fileName = Date.now() + "-" + file.name.replace(/\s/g, '');
+      file.mv(savePath + fileName, (err) => {
+        if (err) {
+          return APIResponseFormat._ResImageError(res, err);
+        }
+      });
+
+      fileNameArray.push(fileName);
+    });
+
+    return APIResponseFormat._ResDataCreated(res, { fileNameArray: fileNameArray });
   } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
@@ -48,11 +95,30 @@ const addProduct = async (req, res) => {
       return APIResponseFormat._ResMissingRequiredField(res, "Category");
     }
 
-    // check if image is uploaded or not    
-    if (!req.file) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Image");
+    // check if avatar_image is uploaded or not
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Avatar Image");
     }
-    let avatar_image = req.file.filename;
+
+    let file = req.files.avatar_image;
+    // if file size is greater than 5MB then return error
+    if (file.size > 5 * 1024 * 1024) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image size should be less than 5MB");
+    }
+
+    // if file type is not jpeg, jpg, png or gif then return error
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.mimetype)) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image should be jpeg, jpg, png or gif");
+    }
+
+    // make a path to save the file in public/products folder
+    let savePath = path.join(__dirname, '../', '../', 'public', 'products', '/');
+    let fileName = Date.now() + "-" + file.name.replace(/\s/g, '');
+    file.mv(savePath + fileName, (err) => {
+      if (err) {
+        return APIResponseFormat._ResImageError(res, err);
+      }
+    });
 
     // check if product already exists
     const product = await Product.findOne({ where: { title } });
@@ -68,7 +134,7 @@ const addProduct = async (req, res) => {
       discount_amount,
       short_description,
       description,
-      avatar_image,
+      avatar_image: fileName,
       slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
     });
     if (newProduct) {
@@ -254,16 +320,16 @@ const updateProduct = async (req, res) => {
   }
 };
 
-const getAllProducts = async (req , res) => {
-  try{
+const getAllProducts = async (req, res) => {
+  try {
     const products = await Product.findAll();
-    if(products.length > 0){
+    if (products.length > 0) {
       return APIResponseFormat._ResDataFound(res, products);
-    }else{
+    } else {
       return APIResponseFormat._ResDataNotFound(res);
     }
 
-  }catch(error){
+  } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
 }

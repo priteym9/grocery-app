@@ -1,7 +1,7 @@
 const db = require("../db/models");
 
 class APIResponseFormat {
-    constructor(status, success , message, data , error) {
+    constructor(status, success, message, data, error) {
         this.status = status;
         this.success = success;
         this.message = message;
@@ -82,7 +82,7 @@ const _ResDataAlreadyExists = (res) => {
     res.status(400).json(new APIResponseFormat(400, false, "Data already exists"));
 }
 
-const _ResDataNotExists = (res , message) => {
+const _ResDataNotExists = (res, message) => {
     res.status(400).json(new APIResponseFormat(400, false, message));
 }
 
@@ -99,16 +99,13 @@ const _ResRouteNotFound = (res) => {
     res.status(404).json(new APIResponseFormat(404, false, "Route not found"));
 }
 
-const _ResDataDeleted = (res , data) => {
-    res.status(200).json(new APIResponseFormat(200, true, "Data deleted" , data));
+const _ResDataDeleted = (res, data) => {
+    res.status(200).json(new APIResponseFormat(200, true, "Data deleted", data));
 }
 
-
-
-
-
-
-
+const _ResImageError = (res, message) => {
+    res.status(400).json(new APIResponseFormat(400, false, message, null, "Image error"));
+}
 
 module.exports = {
     _ResMissingRequiredField,
@@ -126,14 +123,14 @@ module.exports = {
     _ResDataUpdated,
     _ResDataAlreadyExists,
     _ResAdminAlreadyExists,
-    _ResAdminDoesNotExist ,
-    _ResAdminDetails ,
-    _ResDataNotExists ,
-    _ResAdminLoginSuccess ,
-    _ResRouteNotFound ,
+    _ResAdminDoesNotExist,
+    _ResAdminDetails,
+    _ResDataNotExists,
+    _ResAdminLoginSuccess,
+    _ResRouteNotFound,
     _ResAdminRegisterSuccess,
-    _ResDataDeleted
-
+    _ResDataDeleted,
+    _ResImageError
 }
 
 
