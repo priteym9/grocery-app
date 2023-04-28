@@ -121,9 +121,46 @@ const addProduct = async (req, res) => {
     });
 
     // check if product already exists
-    const product = await Product.findOne({ where: { title } });
+    const product = await Product.findOne({
+      where: {
+        title: title
+      },
+      paranoid: false
+    });
     if (product) {
-      return APIResponseFormat._ResDataAlreadyExists(res)
+      // Check if product is deleted
+      if (product.deleted_at !== null) {
+        // restore product
+        await product.restore();
+      }
+      // update product
+      await product.update({
+        amount,
+        discount_type,
+        discount_amount,
+        short_description,
+        description,
+        avatar_image: fileName,
+        slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
+      });
+      // delete all categories of product
+      await ProductCategory.destroy({
+        where: {
+          product_id: product.id,
+        }
+      });
+
+      // append produt_id in productCategoryArray
+      const productCategoryArray = [];
+      categoryArray.forEach((item) => {
+        productCategoryArray.push({ product_id: product.id, category_id: item })
+      }
+      );
+      // insert data into product_category table
+      const productCategory = await ProductCategory.bulkCreate(productCategoryArray);
+      if (productCategory) {
+        return APIResponseFormat._ResDataCreated(res, productCategory);
+      }
     }
 
     // create a product and insert data into it and also insert category_id in product_category table 
