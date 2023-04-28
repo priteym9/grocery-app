@@ -5,6 +5,8 @@ const Order = db.orders;
 const OrderItem = db.order_items;
 const Address = db.addresses;
 const Product = db.products;
+const paymentStatusMasters = db.paymentStatusMasters;
+
 const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
@@ -179,7 +181,7 @@ const deleteCustomer = async (req, res) => {
 }
 
 
-const getCustomerAllOrders = async (req, res) => {
+const getCustomerAllOrdersById = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
         if (!customer_id) {
@@ -210,7 +212,7 @@ const getCustomerAllOrders = async (req, res) => {
                             include: [
                                 {
                                     model: Product,
-                                    as: 'product',
+                                    as: 'product'
                                 }
                             ]
                         }
@@ -254,7 +256,7 @@ const editCustomer = async (req, res) => {
         } = req.body;
 
         // check all required fields usiig for loop
-        if(!first_name || !last_name || !primary_mobile_number || !secondary_mobile_number || !secondary_email || !customer_type || !is_active){
+        if (!first_name || !last_name || !primary_mobile_number || !secondary_mobile_number || !secondary_email || !customer_type || !is_active) {
             return APIResponseFormat._ResMissingRequiredField(res, "All Fields")
         }
 
@@ -276,6 +278,48 @@ const editCustomer = async (req, res) => {
     }
 }
 
+const getAllOrders = async (req, res) => {
+    try {
+        const orders = await Order.findAll({
+            include: [
+                {
+                    model: OrderItem,
+                    as: 'order_items',
+                    include: [
+                        {
+                            model: Product,
+                            as: 'product',
+                        }
+                    ]
+                },
+                {
+                    model: Customer,
+                    as: 'customer',
+                }, {
+                    model: Address,
+                    as: 'delivery_address',
+                }, {
+                    model: Address,
+                    as: 'billing_address',
+                },
+                {
+                    model: paymentStatusMasters,
+                    as: 'payment_status_masters',
+                    attributes: ['id', 'title']
+                }
+            ]
+        });
+        if (!orders) {
+            return APIResponseFormat._ResDataNotFound(res)
+        }
+        return APIResponseFormat._ResDataFound(res, orders)
+    }
+    catch (error) {
+        return APIResponseFormat._ResServerError(res, error);
+    }
+}
+
+
 
 
 
@@ -290,6 +334,7 @@ module.exports = {
     blockCustomer,
     unblockCustomer,
     deleteCustomer,
-    getCustomerAllOrders,
-    editCustomer
+    editCustomer,
+    getCustomerAllOrdersById,
+    getAllOrders
 }
