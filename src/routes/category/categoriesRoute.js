@@ -9,4 +9,10 @@ router.post('/add-category', validateAdminToken, categoryController.addCategory)
 router.put('/update-category', validateAdminToken, categoryController.updateCategory)
 router.delete('/delete-category', validateAdminToken, categoryController.deleteCategory)
 
+
+// active/inactive category
+router.put('/active-category', validateAdminToken, categoryController.activeCategory)
+router.put('/inactive-category', validateAdminToken, categoryController.inactiveCategory)
+
+
 module.exports = router;

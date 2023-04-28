@@ -6,7 +6,7 @@ const Admin = db.admins;
 const validateAdminToken = async (req, res, next) => {
     const token = req.header('token');
     if (!token) {
-        return APIResponseFormat._ResMissingRequiredField(res, "Token is required");
+        return APIResponseFormat._ResMissingRequiredField(res, "Token is");
     }
     try {
         const data = jwt.verify(token, process.env.SECRET_KEY);

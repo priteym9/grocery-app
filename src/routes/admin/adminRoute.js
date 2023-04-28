@@ -14,7 +14,17 @@ router.get('/get-all-customers', validateAdminToken, adminController.getAllCusto
 
 //  block/unblock customer
 router.put('/block-customer', validateAdminToken, adminController.blockCustomer);
-// router.put('/unblock-customer', validateAdminToken, adminController.unblockCustomer);
+router.put('/unblock-customer', validateAdminToken, adminController.unblockCustomer);
+
+
+// delete customer
+router.delete('/delete-customer', validateAdminToken, adminController.deleteCustomer);
+
+// get all orders
+router.get('/get-all-orders', validateAdminToken, adminController.getCustomerAllOrders);
+
+// edit customer
+router.put('/edit-customer', validateAdminToken, adminController.editCustomer);
 
 
 module.exports = router;

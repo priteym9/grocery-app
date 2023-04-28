@@ -10,10 +10,10 @@ const getAllCategories = async (req, res) => {
             attributes: ['id', 'title', 'parent_id', 'slug']
         });
         if (allCategories.length === 0) {
-            return APIResponseFormat._ResDataNotExists(res , "Categories not found")
+            return APIResponseFormat._ResDataNotExists(res, "Categories not found")
 
         } else {
-            return APIResponseFormat._ResDataFound(res , allCategories)
+            return APIResponseFormat._ResDataFound(res, allCategories)
         }
 
     } catch (err) {
@@ -125,14 +125,59 @@ const deleteCategory = async (req, res) => {
         // delete category
         await Categories.destroy({ where: { id: category_id } });
         return APIResponseFormat._ResDataDeleted(res);
+    } catch (err) {
+        return APIResponseFormat._ResServerError(res, err);
+    }
+}
 
+const activeCategory = async (req, res) => {
+    try {
+        let category_id = req.header('category_id');
+        if (!category_id) return APIResponseFormat._ResMissingRequiredField(res, "category_id");
 
+        // check if category_id is valid or not
+        category_id = _doDecrypt(category_id);
+        const existingCategory = await Categories.findOne({ where: { id: category_id } });
+        if (!existingCategory) return APIResponseFormat._ResDataNotExists(res, "Category not found");
 
+        // active category
+        const activeCategory = await Categories.update({
+            is_active: true
+        },
+            {
+                where: {
+                    id: category_id
+                }
+            });
+        return APIResponseFormat._ResDataUpdated(res, activeCategory);
+    } catch (err) {
+        return APIResponseFormat._ResServerError(res, err);
+    }
+}
 
+const inactiveCategory = async (req, res) => {
+    try {
+        let category_id = req.header('category_id');
+        if (!category_id) return APIResponseFormat._ResMissingRequiredField(res, "category_id");
 
+        // check if category_id is valid or not
+        category_id = _doDecrypt(category_id);
+        const existingCategory = await Categories.findOne({ where: { id: category_id } });
+        if (!existingCategory) return APIResponseFormat._ResDataNotExists(res, "Category not found");
 
-
-
+        // inactive category
+        const inactiveCategory = await Categories.update({
+            is_active: false
+        },{
+            where: {
+                id: category_id
+        }
+        });
+        if(inactiveCategory){
+            return APIResponseFormat._ResDataUpdated(res, inactiveCategory);
+        }else{
+            return APIResponseFormat._ResDataNotExists(res, "Category not found");
+        }
     } catch (err) {
         return APIResponseFormat._ResServerError(res, err);
     }
@@ -141,9 +186,13 @@ const deleteCategory = async (req, res) => {
 
 
 
+
+
 module.exports = {
     getAllCategories,
     updateCategory,
     addCategory,
-    deleteCategory
+    deleteCategory,
+    activeCategory,
+    inactiveCategory
 };
