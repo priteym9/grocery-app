@@ -1,6 +1,9 @@
 const db = require('../../db/models/index');
 const Admin = db.admins;
 const Customer = db.customers;
+const Order = db.orders;
+const OrderItem = db.order_items;
+const Addresses = db.addresses;
 const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
@@ -103,19 +106,79 @@ const blockCustomer = async (req, res) => {
             return APIResponseFormat._ResMissingRequiredField(res, "customer_id")
         }
 
+        customer_id = _doDecrypt(customer_id);
         const customer = await Customer.findOne({ where: { id: customer_id } });
         if (!customer) {
             return APIResponseFormat._ResUserDoesNotExist(res)
         } else {
             const updatedCustomer = await Customer.update({ is_active: false }, { where: { id: customer_id } });
             if (updatedCustomer) {
-                return APIResponseFormat._ResCustomerBlocked(res)
+                return APIResponseFormat._ResDataUpdated(res, updatedCustomer)
             }
         }
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error)
     }
 }
+
+const unblockCustomer = async (req, res) => {
+    try {
+        let customer_id = req.header('customer_id');
+        if (!customer_id) {
+            return APIResponseFormat._ResMissingRequiredField(res, "customer_id")
+        }
+
+        customer_id = _doDecrypt(customer_id);
+        const customer = await Customer.findOne({ where: { id: customer_id } });
+        if (!customer) {
+            return APIResponseFormat._ResUserDoesNotExist(res)
+        } else {
+            const updatedCustomer = await Customer.update({ is_active: true }, { where: { id: customer_id } });
+            if (updatedCustomer) {
+                return APIResponseFormat._ResDataUpdated(res, updatedCustomer)
+            }
+        }
+    } catch (error) {
+        return APIResponseFormat._ResServerError(res, error)
+    }
+}
+
+const deleteCustomer = async (req, res) => {
+    try {
+        let customer_id = req.header('customer_id');
+        if (!customer_id) {
+            return APIResponseFormat._ResMissingRequiredField(res, "customer_id")
+        }
+
+        customer_id = _doDecrypt(customer_id);
+        const customer = await Customer.findOne({ where: { id: customer_id } });
+        if (!customer) {
+            return APIResponseFormat._ResUserDoesNotExist(res)
+        }
+
+        // delete customer and all his/her orders and order items
+        const Order_id = await Order.findAll({ where: { customer_id } });
+        for (let i = 0; i < Order_id.length; i++) {
+            const order_id = Order_id[i].id;
+            const deleteOrderItems = await OrderItem.destroy({ where: { order_id } });
+            const deleteOrder = await Order.destroy({ where: { id: order_id } });
+        }
+
+        const deleteCustomerAddress = await Addresses.destroy({ where: { customer_id } });
+        const deleteCustomer = await Customer.destroy({ where: { id: customer_id } });
+        if (deleteCustomer) {
+            return APIResponseFormat._ResDataDeleted(res, deleteCustomer)
+        }
+
+
+
+    } catch (error) {
+        return APIResponseFormat._ResServerError(res, error)
+    }
+}
+
+
+
 
 
             
@@ -125,5 +188,7 @@ module.exports = {
     login,
     getAdminDetails ,
     getAllCustomers ,
-    blockCustomer
+    blockCustomer ,
+    unblockCustomer ,
+    deleteCustomer
 }

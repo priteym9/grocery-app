@@ -179,26 +179,32 @@ const getProductById = async (req, res) => {
 // Get All Products by Category Id
 const getProductByCategory = async (req, res) => {
   try {
-    if (!req.header("category_id")) {
+    let category_id  = req.header("category_id");
+    if (!category_id) {
       return APIResponseFormat._ResMissingRequiredField(res, "Category Id");
     }
 
     // check category id is valid or not
+    category_id = _doDecrypt(category_id);
     const category = await Category.findOne({
       where: {
-        id: _doDecrypt(req.header("category_id")),
+        id: category_id,
       },
     });
     if (category) {
       const products = await ProductCategory.findAll({
         where: {
-          category_id: _doDecrypt(req.header("category_id")),
+          category_id: category_id,
+          // is_active: true,
         },
         attributes: ["id", "product_id", "category_id"],
         include: [
           {
             model: Product,
             as: "product",
+            where: {
+              is_active: true,
+            },
           },
         ],
       });
@@ -366,6 +372,71 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const activeProduct = async (req, res) => {
+  try {
+    let product_id = req.header("product_id");
+    if (!product_id) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
+    }
+
+    // check if product id is valid or not
+    product_id = _doDecrypt(product_id);
+    const existProduct = await Product.findOne({ where: { id: product_id } });
+    if(!existProduct){
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+
+    // activeProduct
+    const activeProduct = await Product.update(
+      {
+        is_active : true 
+      },
+      { where: { id: product_id } }
+    );
+    if (activeProduct) {
+      return APIResponseFormat._ResDataUpdated(res, "Product activated successfully");
+    } else {
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+    } catch (error) {
+    return APIResponseFormat._ResServerError(res, error);
+  }
+};
+
+const inactiveProduct = async (req, res) => {
+  try {
+    let product_id = req.header("product_id");
+    if (!product_id) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
+    }
+
+    // check if product id is valid or not
+    product_id = _doDecrypt(product_id);
+    const existProduct = await Product.findOne({ where: { id: product_id } });
+    if(!existProduct){
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+
+    // inactiveProduct
+    const inactiveProduct = await Product.update(
+      {
+        is_active : false
+      },
+      { where: { id: product_id } }
+    );
+    if (inactiveProduct) {
+      return APIResponseFormat._ResDataUpdated(res, "Product inactivated successfully");
+    } else {
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+    } catch (error) {
+    return APIResponseFormat._ResServerError(res, error);
+  }
+};
+
+
+
+
 module.exports = {
   getProductById,
   getProductByCategory,
@@ -374,5 +445,8 @@ module.exports = {
   uploadImage,
   uploadMultipleImages,
   getAllProducts ,
-  deleteProduct
+  deleteProduct ,
+  activeProduct ,
+  inactiveProduct
+
 };
