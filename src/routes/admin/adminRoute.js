@@ -20,5 +20,11 @@ router.put('/unblock-customer', validateAdminToken, adminController.unblockCusto
 // delete customer
 router.delete('/delete-customer', validateAdminToken, adminController.deleteCustomer);
 
+// get all orders
+router.get('/get-all-orders', validateAdminToken, adminController.getCustomerAllOrders);
+
+// edit customer
+router.put('/edit-customer', validateAdminToken, adminController.editCustomer);
+
 
 module.exports = router;
