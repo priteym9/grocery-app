@@ -47,6 +47,16 @@ const addCategory = async (req, res) => {
         const category = await Categories.findOne({ where: { title } });
         if (category) return APIResponseFormat._ResDataAlreadyExists(res);
 
+        // check if category deleted_at then restore it
+        const deletedCategory = await Categories.findOne({ where: { title, deleted_at: { $ne: null } } });
+        if (deletedCategory) {
+            deletedCategory.deleted_at = null;
+            await deletedCategory.save();
+            return APIResponseFormat._ResDataCreated(res, deletedCategory);
+        }
+
+
+
         // create category
         const newCategory = await Categories.create({ title, parent_id, slug });
         return APIResponseFormat._ResDataCreated(res, newCategory);
@@ -91,8 +101,49 @@ const updateCategory = async (req, res) => {
     }
 }
 
+const deleteCategory = async (req, res) => {
+    try {
+        let category_id = req.header('category_id');
+        if (!category_id) return APIResponseFormat._ResMissingRequiredField(res, "category_id");
+
+        // check if category_id is valid or not
+        category_id = _doDecrypt(category_id);
+        const existingCategory = await Categories.findOne({ where: { id: category_id } });
+        if (!existingCategory) return APIResponseFormat._ResDataNotExists(res, "Category not found");
+
+
+        // check if category has sub categories then delete them and also delete in  product_categories table
+
+        const subCategories = await Categories.findAll({ where: { parent_id: category_id } });
+        if (subCategories.length > 0) {
+            // delete sub categories
+            await Categories.destroy({ where: { parent_id: category_id } });
+            // delete in product_categories table
+            await db.product_categories.destroy({ where: { category_id: category_id } });
+        }
+
+        // delete category
+        await Categories.destroy({ where: { id: category_id } });
+        return APIResponseFormat._ResDataDeleted(res);
+
+
+
+
+
+
+
+
+    } catch (err) {
+        return APIResponseFormat._ResServerError(res, err);
+    }
+}
+
+
+
+
 module.exports = {
     getAllCategories,
     updateCategory,
     addCategory,
+    deleteCategory
 };
