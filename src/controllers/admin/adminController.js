@@ -1,5 +1,6 @@
 const db = require('../../db/models/index');
 const Admin = db.admins;
+const Customer = db.customers;
 const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
@@ -86,8 +87,43 @@ const getAdminDetails = async (req, res) => {
     }
 }
 
+const getAllCustomers = async (req, res) => {
+    try {
+        const customers = await Customer.findAll();
+        return APIResponseFormat._ResDataFound(res, customers)
+    } catch (error) {
+        return APIResponseFormat._ResServerError(res, error)
+    }
+}
+
+const blockCustomer = async (req, res) => {
+    try {
+        let customer_id = req.header('customer_id');
+        if (!customer_id) {
+            return APIResponseFormat._ResMissingRequiredField(res, "customer_id")
+        }
+
+        const customer = await Customer.findOne({ where: { id: customer_id } });
+        if (!customer) {
+            return APIResponseFormat._ResUserDoesNotExist(res)
+        } else {
+            const updatedCustomer = await Customer.update({ is_active: false }, { where: { id: customer_id } });
+            if (updatedCustomer) {
+                return APIResponseFormat._ResCustomerBlocked(res)
+            }
+        }
+    } catch (error) {
+        return APIResponseFormat._ResServerError(res, error)
+    }
+}
+
+
+            
+
 module.exports = {
     register,
     login,
-    getAdminDetails
+    getAdminDetails ,
+    getAllCustomers ,
+    blockCustomer
 }

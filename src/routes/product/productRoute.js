@@ -13,5 +13,6 @@ router.get('/get-product-by-category-id', productController.getProductByCategory
 router.put('/update-product', validateAdminToken, productController.updateProduct)
 router.post('/add-product', validateAdminToken, productController.addProduct)
 router.get('/get-all-products', productController.getAllProducts)
+router.delete('/delete-product', validateAdminToken, productController.deleteProduct)
 
 module.exports = router;

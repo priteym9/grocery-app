@@ -334,6 +334,38 @@ const getAllProducts = async (req, res) => {
   }
 }
 
+
+const deleteProduct = async (req, res) => {
+  try {
+    let product_id = req.header("product_id");
+    if (!product_id) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
+    }
+
+    // check if product id is valid or not
+    product_id = _doDecrypt(product_id);
+    const existProduct = await Product.findOne({ where: { id: product_id } });
+    if(!existProduct){
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+
+    // delete product from product table and product_category table
+    const deletedProduct = await Product.destroy({
+      where: { id: product_id }
+    });
+    if (deletedProduct) {
+      await ProductCategory.destroy({
+        where: { product_id },
+      });
+      return APIResponseFormat._ResDataDeleted(res, "Product deleted successfully");
+    } else {
+      return APIResponseFormat._ResDataNotExists(res, "Product not found");
+    }
+    } catch (error) {
+    return APIResponseFormat._ResServerError(res, error);
+  }
+};
+
 module.exports = {
   getProductById,
   getProductByCategory,
@@ -341,5 +373,6 @@ module.exports = {
   addProduct,
   uploadImage,
   uploadMultipleImages,
-  getAllProducts
+  getAllProducts ,
+  deleteProduct
 };

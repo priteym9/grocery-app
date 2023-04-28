@@ -107,6 +107,10 @@ const _ResImageError = (res, message) => {
     res.status(400).json(new APIResponseFormat(400, false, message, null, "Image error"));
 }
 
+const _ResDataCannotBeDeleted = (res, message) => {
+    res.status(400).json(new APIResponseFormat(400, false, message, null, "Data cannot be deleted"));
+}
+
 module.exports = {
     _ResMissingRequiredField,
     _ResInvalidEmail,
@@ -130,7 +134,8 @@ module.exports = {
     _ResRouteNotFound,
     _ResAdminRegisterSuccess,
     _ResDataDeleted,
-    _ResImageError
+    _ResImageError ,
+    _ResDataCannotBeDeleted
 }
 
 
