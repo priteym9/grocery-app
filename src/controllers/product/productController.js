@@ -5,6 +5,7 @@ const Category = db.categories;
 const Product = db.products;
 const ProductCategory = db.product_categories;
 const path = require('path');
+const { Op } = db.Sequelize;
 
 
 // make a function to save the file in public/products folder and get the file name
@@ -89,6 +90,7 @@ const addProduct = async (req, res) => {
     }
 
     let categoryArray = JSON.parse(categoryArrayFromBody);
+    console.log(categoryArray);
 
     // check categoryArray is not empty
     if (!categoryArray || categoryArray.length === 0) {
@@ -120,20 +122,30 @@ const addProduct = async (req, res) => {
       }
     });
 
-    // check if product already exists
-    const product = await Product.findOne({
+    // findOrCreate product with paranoid true
+    const [product, created] = await Product.findOrCreate({
       where: {
-        title: title
+        title: title,
       },
-      paranoid: false
-    });
-    if (product) {
-      // Check if product is deleted
-      if (product.deleted_at !== null) {
-        // restore product
-        await product.restore();
+      paranoid: false,  // disable soft delete
+      defaults: {
+        amount,
+        discount_type,
+        discount_amount,
+        short_description,
+        description,
+        avatar_image: fileName,
+        slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
       }
-      // update product
+    });
+
+    if (created === false && product.deleted_at === null) {
+      return APIResponseFormat._ResDataAlreadyExists(res);
+    }
+
+    if (created === false && product.deleted_at !== null) {
+      // restore product and update product with new values
+      await product.restore();
       await product.update({
         amount,
         discount_type,
@@ -143,49 +155,43 @@ const addProduct = async (req, res) => {
         avatar_image: fileName,
         slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
       });
-      // delete all categories of product
-      await ProductCategory.destroy({
-        where: {
-          product_id: product.id,
+
+      // update product_category with new values
+      categoryArray.forEach(async (category) => {
+        let productCategory = await ProductCategory.findOne({
+          where: {
+            product_id: product.id,
+            category_id: category
+          },
+          paranoid: false  // disable soft delete
+        });
+
+        if (productCategory) {
+          if (productCategory.deleted_at !== null) {
+            // restore product_category
+            await productCategory.restore();
+          }
+        } else {
+          // create product_category
+          await ProductCategory.create({
+            product_id: product.id,
+            category_id: category
+          });
         }
       });
-
-      // append produt_id in productCategoryArray
-      const productCategoryArray = [];
-      categoryArray.forEach((item) => {
-        productCategoryArray.push({ product_id: product.id, category_id: item })
-      }
-      );
-      // insert data into product_category table
-      const productCategory = await ProductCategory.bulkCreate(productCategoryArray);
-      if (productCategory) {
-        return APIResponseFormat._ResDataCreated(res, productCategory);
-      }
     }
 
-    // create a product and insert data into it and also insert category_id in product_category table 
-    const newProduct = await Product.create({
-      title,
-      amount,
-      discount_type,
-      discount_amount,
-      short_description,
-      description,
-      avatar_image: fileName,
-      slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
-    });
-    if (newProduct) {
-      // append produt_id in productCategoryArray
-      const productCategoryArray = [];
-      categoryArray.forEach((item) => {
-        productCategoryArray.push({ product_id: newProduct.id, category_id: item })
+    if (created === true) {
+      // create product_category
+      categoryArray.forEach(async (category) => {
+        await ProductCategory.create({
+          product_id: product.id,
+          category_id: category
+        });
       });
-      // insert data into product_category table
-      const productCategory = await ProductCategory.bulkCreate(productCategoryArray);
-      if (productCategory) {
-        return APIResponseFormat._ResDataCreated(res, newProduct);
-      }
     }
+    return APIResponseFormat._ResDataCreated(res, product);
+
   } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
@@ -216,7 +222,7 @@ const getProductById = async (req, res) => {
 // Get All Products by Category Id
 const getProductByCategory = async (req, res) => {
   try {
-    let category_id  = req.header("category_id");
+    let category_id = req.header("category_id");
     if (!category_id) {
       return APIResponseFormat._ResMissingRequiredField(res, "Category Id");
     }
@@ -388,7 +394,7 @@ const deleteProduct = async (req, res) => {
     // check if product id is valid or not
     product_id = _doDecrypt(product_id);
     const existProduct = await Product.findOne({ where: { id: product_id } });
-    if(!existProduct){
+    if (!existProduct) {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
 
@@ -404,7 +410,7 @@ const deleteProduct = async (req, res) => {
     } else {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
-    } catch (error) {
+  } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
 };
@@ -419,14 +425,14 @@ const activeProduct = async (req, res) => {
     // check if product id is valid or not
     product_id = _doDecrypt(product_id);
     const existProduct = await Product.findOne({ where: { id: product_id } });
-    if(!existProduct){
+    if (!existProduct) {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
 
     // activeProduct
     const activeProduct = await Product.update(
       {
-        is_active : true 
+        is_active: true
       },
       { where: { id: product_id } }
     );
@@ -435,7 +441,7 @@ const activeProduct = async (req, res) => {
     } else {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
-    } catch (error) {
+  } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
 };
@@ -450,14 +456,14 @@ const inactiveProduct = async (req, res) => {
     // check if product id is valid or not
     product_id = _doDecrypt(product_id);
     const existProduct = await Product.findOne({ where: { id: product_id } });
-    if(!existProduct){
+    if (!existProduct) {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
 
     // inactiveProduct
     const inactiveProduct = await Product.update(
       {
-        is_active : false
+        is_active: false
       },
       { where: { id: product_id } }
     );
@@ -466,7 +472,7 @@ const inactiveProduct = async (req, res) => {
     } else {
       return APIResponseFormat._ResDataNotExists(res, "Product not found");
     }
-    } catch (error) {
+  } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
 };
@@ -481,9 +487,8 @@ module.exports = {
   addProduct,
   uploadImage,
   uploadMultipleImages,
-  getAllProducts ,
-  deleteProduct ,
-  activeProduct ,
+  getAllProducts,
+  deleteProduct,
+  activeProduct,
   inactiveProduct
-
 };
