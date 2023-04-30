@@ -8,7 +8,7 @@ const ProductCategories = db.product_categories;
 const getAllCategories = async (req, res) => {
     try {
         const allCategories = await Categories.findAll({
-            attributes: ['id', 'title', 'parent_id', 'slug']
+            // attributes: ['id', 'title', 'parent_id', 'slug']
         });
         if (allCategories.length === 0) {
             return APIResponseFormat._ResDataNotExists(res, "Categories not found")
