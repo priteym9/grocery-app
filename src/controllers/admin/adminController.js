@@ -12,6 +12,7 @@ const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
 
+// register admin
 const register = async (req, res) => {
     // admin registration logic    
     try {
@@ -37,7 +38,12 @@ const register = async (req, res) => {
             // create admin
             const newAdmin = await Admin.create({ first_name, last_name, email, password: encryptedPass });
             if (newAdmin) {
-                return APIResponseFormat._ResAdminRegisterSuccess(res, newAdmin)
+                return APIResponseFormat._ResAdminRegisterSuccess(res, {
+                    id: newAdmin.id,
+                    first_name: newAdmin.first_name,
+                    last_name: newAdmin.last_name,
+                    email: newAdmin.email
+                })
             }
         }
     } catch (err) {
@@ -45,6 +51,7 @@ const register = async (req, res) => {
     }
 }
 
+// login admin
 const login = async (req, res) => {
     try {
         let { email, password } = req.body;
@@ -80,6 +87,7 @@ const login = async (req, res) => {
     }
 }
 
+// get admin details
 const getAdminDetails = async (req, res) => {
     try {
         let adminId = req.adminId;
@@ -94,6 +102,7 @@ const getAdminDetails = async (req, res) => {
     }
 }
 
+// get all customers
 const getAllCustomers = async (req, res) => {
     try {
         const customers = await Customer.findAll({
@@ -110,6 +119,7 @@ const getAllCustomers = async (req, res) => {
     }
 }
 
+// block customer
 const blockCustomer = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
@@ -132,6 +142,7 @@ const blockCustomer = async (req, res) => {
     }
 }
 
+// unblock customer
 const unblockCustomer = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
@@ -154,6 +165,7 @@ const unblockCustomer = async (req, res) => {
     }
 }
 
+// delete customer
 const deleteCustomer = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
@@ -180,15 +192,12 @@ const deleteCustomer = async (req, res) => {
         if (deleteCustomer) {
             return APIResponseFormat._ResDataDeleted(res, deleteCustomer)
         }
-
-
-
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error)
     }
 }
 
-
+// get customer all orders by customer id
 const getCustomerAllOrdersById = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
@@ -223,12 +232,12 @@ const getCustomerAllOrdersById = async (req, res) => {
                                     as: 'product'
                                 }
                             ]
-                        } ,
+                        },
                         {
                             model: paymentStatusMasters,
                             as: 'payment_status_masters',
                             attributes: ['id', 'title']
-                        } ,{
+                        }, {
                             model: orderStatusMasters,
                             as: 'order_status_masters',
                             attributes: ['id', 'title']
@@ -253,7 +262,7 @@ const getCustomerAllOrdersById = async (req, res) => {
     }
 }
 
-
+// edit customer
 const editCustomer = async (req, res) => {
     try {
         let customer_id = req.header('customer_id');
@@ -299,6 +308,7 @@ const editCustomer = async (req, res) => {
     }
 }
 
+// get all orders
 const getAllOrders = async (req, res) => {
     try {
         const orders = await Order.findAll({

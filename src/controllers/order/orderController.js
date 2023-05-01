@@ -6,17 +6,14 @@ const APIResponseFormat = require('../../utils/APIResponseFormat');
 const { _doDecrypt } = require('../../utils/encryption');
 const OrderItem = db.order_items;
 
-
-
 // add order with items
 const addOrder = async (req, res) => {
     try {
-
         const customer_id = req.userId;
-        const delivery_address_id = _doDecrypt(req.header('delivery_address_id'));
-        const billing_address_id = _doDecrypt(req.header('billing_address_id'));
-        const payment_status = _doDecrypt(req.header('payment_status'));
-        const order_status = _doDecrypt(req.header('order_status'));
+        let delivery_address_id = req.header('delivery_address_id');
+        let billing_address_id = req.header('billing_address_id');
+        let payment_status = req.header('payment_status');
+        let order_status = req.header('order_status');
 
         let { order_date, special_note, estimate_delivery_date, sub_total, tax_amount, discount_amount, total_amount, paid_amount, payment_type, order_products } = req.body;
 
@@ -40,7 +37,22 @@ const addOrder = async (req, res) => {
         }
 
         // insert order details in order table then insert order items in order_items table with order_id
-        const newOrder = await Order.create({ order_date, special_note, estimate_delivery_date, sub_total, tax_amount, discount_amount, total_amount, paid_amount, payment_type, customer_id, delivery_address_id, billing_address_id, payment_status, order_status });
+        const newOrder = await Order.create({
+            order_date,
+            special_note,
+            estimate_delivery_date,
+            sub_total,
+            tax_amount,
+            discount_amount,
+            total_amount,
+            paid_amount,
+            payment_type,
+            customer_id,
+            delivery_address_id: _doDecrypt(delivery_address_id),
+            billing_address_id: _doDecrypt(billing_address_id),
+            payment_status: _doDecrypt(payment_status),
+            order_status: _doDecrypt(order_status)
+        });
 
         if (newOrder) {
             let order_items = [];
@@ -59,9 +71,8 @@ const addOrder = async (req, res) => {
     }
 }
 
-// get order by id
+// get order by order_id
 const getOrderById = async (req, res) => {
-
     // Get Order full details by Order Id
     if (!req.header('order_id')) {
         return APIResponseFormat._ResMissingRequiredField(res, "order_id");
@@ -75,8 +86,8 @@ const getOrderById = async (req, res) => {
                 {
                     model: OrderItem,
                     as: 'order_items',
-                    attributes: ['id' , 'order_id','product_id' , 'product_name' , 'qty' , 'product_amount' , 'discount_type' , 'discount_amount']
-                } ,
+                    attributes: ['id', 'order_id', 'product_id', 'product_name', 'qty', 'product_amount', 'discount_type', 'discount_amount']
+                },
                 {
                     model: Addresses,
                     as: 'delivery_address',
@@ -84,7 +95,7 @@ const getOrderById = async (req, res) => {
                 {
                     model: Addresses,
                     as: 'billing_address',
-                } ,
+                },
                 {
                     model: paymentStatusMasters,
                     as: 'payment_status_masters',

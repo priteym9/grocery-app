@@ -9,7 +9,7 @@ const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const { _doEncrypt, _doDecrypt } = require('../../utils/encryption');
 
-
+// update customer
 const updateCustomer = async (req, res) => {
     try {
         const customer_id = req.userId;
@@ -91,6 +91,7 @@ const addCustomerAddress = async (req, res) => {
     }
 }
 
+// update customer address
 const updateCustomerAddress = async (req, res) => {
     try {
         const customer_id = req.userId;
@@ -149,6 +150,7 @@ const updateCustomerAddress = async (req, res) => {
     }
 }
 
+// delete customer address
 const deleteAddress = async (req, res) => {
     try {
         const customer_id = req.userId;
@@ -191,7 +193,6 @@ const deleteAddress = async (req, res) => {
 const getCustomerAllOrders = async (req, res) => {
     try {
         const customer_id = req.userId;
-        // Get Customer's all orders by Customer Id using sequelize
         const customer = await Customer.findOne({
             where: {
                 id: customer_id
@@ -229,6 +230,7 @@ const getCustomerAllOrders = async (req, res) => {
 
 }
 
+// login customer
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -268,6 +270,7 @@ const login = async (req, res) => {
     }
 }
 
+// register customer
 const register = async (req, res) => {
     try {
         const { first_name, last_name, primary_mobile_number, primary_email, username, password } = req.body;
@@ -303,13 +306,13 @@ const register = async (req, res) => {
                 return APIResponseFormat._ResRegisterSuccess(res, customer);
             }
         }
-
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error);
     }
 
 }
 
+// get customer details
 const getUserDetails = async (req, res) => {
     try {
         let userId = req.userId;
