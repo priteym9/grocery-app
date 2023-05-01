@@ -6,6 +6,7 @@ const OrderItem = db.order_items;
 const Address = db.addresses;
 const Product = db.products;
 const paymentStatusMasters = db.paymentStatusMasters;
+const orderStatusMasters = db.orderStatusMasters;
 
 const jwt = require('jsonwebtoken');
 const APIResponseFormat = require('../../utils/APIResponseFormat');
@@ -222,11 +223,21 @@ const getCustomerAllOrdersById = async (req, res) => {
                                     as: 'product'
                                 }
                             ]
+                        } ,
+                        {
+                            model: paymentStatusMasters,
+                            as: 'payment_status_masters',
+                            attributes: ['id', 'title']
                         } ,{
-                            model: Address,
-                            as: 'billing_address'
+                            model: orderStatusMasters,
+                            as: 'order_status_masters',
+                            attributes: ['id', 'title']
                         }
                     ]
+                },
+                {
+                    model: Address,
+                    as: 'addresses'
                 }
             ]
 
