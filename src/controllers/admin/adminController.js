@@ -222,11 +222,12 @@ const getCustomerAllOrdersById = async (req, res) => {
                                     as: 'product'
                                 }
                             ]
-                        } ,{
-                            model: Address,
-                            as: 'billing_address'
                         }
                     ]
+                },
+                {
+                    model: Address,
+                    as: 'addresses'
                 }
             ]
 
