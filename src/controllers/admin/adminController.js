@@ -329,13 +329,6 @@ const getAllOrders = async (req, res) => {
     }
 }
 
-
-
-
-
-
-
-
 module.exports = {
     register,
     login,

@@ -7,7 +7,6 @@ const ProductCategory = db.product_categories;
 const path = require('path');
 const { Op } = db.Sequelize;
 
-
 // make a function to save the file in public/products folder and get the file name
 const uploadImage = async (req, res) => {
   try {
@@ -122,76 +121,32 @@ const addProduct = async (req, res) => {
       }
     });
 
-    // findOrCreate product with paranoid true
-    const [product, created] = await Product.findOrCreate({
-      where: {
-        title: title,
-      },
-      paranoid: false,  // disable soft delete
-      defaults: {
-        amount,
-        discount_type,
-        discount_amount,
-        short_description,
-        description,
-        avatar_image: fileName,
-        slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
-      }
+    // create a product
+    const product = await Product.create({
+      title: title,
+      amount: amount,
+      discount_type: discount_type,
+      discount_amount: discount_amount,
+      short_description: short_description,
+      description: description,
+      avatar_image: fileName,
     });
 
-    if (created === false && product.deleted_at === null) {
-      return APIResponseFormat._ResDataAlreadyExists(res);
-    }
-
-    if (created === false && product.deleted_at !== null) {
-      // restore product and update product with new values
-      await product.restore();
-      await product.update({
-        amount,
-        discount_type,
-        discount_amount,
-        short_description,
-        description,
-        avatar_image: fileName,
-        slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
+    // add categories to product
+    let categoryArrayToSave = [];
+    categoryArray.forEach((category) => {
+      categoryArrayToSave.push({
+        product_id: product.id,
+        category_id: category,
       });
+    });
+    const categories = await ProductCategory.bulkCreate(categoryArrayToSave);
 
-      // update product_category with new values
-      categoryArray.forEach(async (category) => {
-        let productCategory = await ProductCategory.findOne({
-          where: {
-            product_id: product.id,
-            category_id: category
-          },
-          paranoid: false  // disable soft delete
-        });
-
-        if (productCategory) {
-          if (productCategory.deleted_at !== null) {
-            // restore product_category
-            await productCategory.restore();
-          }
-        } else {
-          // create product_category
-          await ProductCategory.create({
-            product_id: product.id,
-            category_id: category
-          });
-        }
-      });
+    if (categories) {
+      return APIResponseFormat._ResDataCreated(res, product);
+    } else {
+      return APIResponseFormat._ResServerError(res, "Error while adding categories");
     }
-
-    if (created === true) {
-      // create product_category
-      categoryArray.forEach(async (category) => {
-        await ProductCategory.create({
-          product_id: product.id,
-          category_id: category
-        });
-      });
-    }
-    return APIResponseFormat._ResDataCreated(res, product);
-
   } catch (error) {
     return APIResponseFormat._ResServerError(res, error);
   }
@@ -278,23 +233,56 @@ const updateProduct = async (req, res) => {
       discount_amount,
       short_description,
       description,
-      categoryArray,
+      categoryArrayFromBody,
     } = req.body;
-    let product_id = _doDecrypt(req.header("product_id"));
+    let product_id = req.header("product_id");
+
+    let categoryArray = JSON.parse(categoryArrayFromBody);
 
     // check if product id is valid or not
     if (!product_id) {
       return APIResponseFormat._ResMissingRequiredField(res, "Product Id");
     }
+    product_id = _doDecrypt(product_id);
 
     // check if all fields are empty or not
-    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description || !categoryArray) {
+    if (!title || !amount || !discount_type || !discount_amount || !short_description || !description) {
       return APIResponseFormat._ResMissingRequiredField(res, "All fields");
     }
 
     // check if categoryArray is empty or not
     if (!categoryArray || categoryArray.length === 0) {
-      return APIResponseFormat._ResMissingRequiredField(res, "Category");
+      return APIResponseFormat._ResMissingRequiredField(res, "Category Array");
+    }
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return APIResponseFormat._ResMissingRequiredField(res, "Avatar Image");
+    }
+
+    let file = req.files.avatar_image;
+    // if file size is greater than 5MB then return error
+    if (file.size > 5 * 1024 * 1024) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image size should be less than 5MB");
+    }
+
+    // if file type is not jpeg, jpg, png or gif then return error
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.mimetype)) {
+      return APIResponseFormat._ResImageError(res, "Avatar Image should be jpeg, jpg, png or gif");
+    }
+
+    // move the file to public/products folder
+    let savePath = path.join(__dirname, '../', '../', 'public', 'products', '/');
+    let fileName = Date.now() + "-" + file.name.replace(/\s/g, '');
+    file.mv(savePath + fileName, (err) => {
+      if (err) {
+        return APIResponseFormat._ResImageError(res, err);
+      }
+    });
+
+    // check product title is already exists or not
+    const productTitle = await Product.findOne({ where: { title: title } });
+    if (productTitle) {
+      return APIResponseFormat._ResDataAlreadyExists(res);
     }
 
     // check product id is valid or not, if valid then update product details and also update product_category table 
@@ -308,6 +296,7 @@ const updateProduct = async (req, res) => {
           discount_amount,
           short_description,
           description,
+          avatar_image: fileName,
           slug: title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, ""),
         },
         { where: { id: product_id } }
@@ -347,7 +336,7 @@ const updateProduct = async (req, res) => {
         if (deleteCategoryArray.length > 0) {
           await ProductCategory.destroy({
             where: { product_id, category_id: deleteCategoryArray },
-            force: true,
+            // force: true,
           });
         }
 
@@ -369,6 +358,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
+// get all products
 const getAllProducts = async (req, res) => {
   try {
     const products = await Product.findAll();
@@ -383,7 +373,7 @@ const getAllProducts = async (req, res) => {
   }
 }
 
-
+// delete product
 const deleteProduct = async (req, res) => {
   try {
     let product_id = req.header("product_id");
@@ -415,6 +405,7 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// active product
 const activeProduct = async (req, res) => {
   try {
     let product_id = req.header("product_id");
@@ -446,6 +437,7 @@ const activeProduct = async (req, res) => {
   }
 };
 
+// inactive product
 const inactiveProduct = async (req, res) => {
   try {
     let product_id = req.header("product_id");
@@ -476,9 +468,6 @@ const inactiveProduct = async (req, res) => {
     return APIResponseFormat._ResServerError(res, error);
   }
 };
-
-
-
 
 module.exports = {
   getProductById,

@@ -15,7 +15,6 @@ router.post('/add-product', validateAdminToken, productController.addProduct)
 router.get('/get-all-products', productController.getAllProducts)
 router.delete('/delete-product', validateAdminToken, productController.deleteProduct)
 
-
 // active/inactive product
 router.put('/active-product', validateAdminToken, productController.activeProduct)
 router.put('/inactive-product', validateAdminToken, productController.inactiveProduct)

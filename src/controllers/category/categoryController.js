@@ -22,7 +22,6 @@ const getAllCategories = async (req, res) => {
     }
 }
 
-
 // add category
 const addCategory = async (req, res) => {
     let { title, parent_id } = req.body;
@@ -92,7 +91,6 @@ const addCategory = async (req, res) => {
     }
 };
 
-
 // update category
 const updateCategory = async (req, res) => {
     try {
@@ -133,6 +131,7 @@ const updateCategory = async (req, res) => {
     }
 }
 
+// delete category
 const deleteCategory = async (req, res) => {
     try {
         let category_id = req.header('category_id');
@@ -162,6 +161,7 @@ const deleteCategory = async (req, res) => {
     }
 }
 
+// active category
 const activeCategory = async (req, res) => {
     try {
         let category_id = req.header('category_id');
@@ -187,6 +187,7 @@ const activeCategory = async (req, res) => {
     }
 }
 
+// inactive category
 const inactiveCategory = async (req, res) => {
     try {
         let category_id = req.header('category_id');
