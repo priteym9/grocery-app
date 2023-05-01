@@ -54,18 +54,18 @@ const addCategory = async (req, res) => {
             paranoid: false,
             defaults: { title, parent_id, slug }
         });
-        
-        if(created === false && newCategory.deleted_at === null) {
-            return  APIResponseFormat._ResDataAlreadyExists(res);
+
+        if (created === false && newCategory.deleted_at === null) {
+            return APIResponseFormat._ResDataAlreadyExists(res);
         }
 
-        if(created === false && newCategory.deleted_at !== null) {
+        if (created === false && newCategory.deleted_at !== null) {
             await Categories.restore({ where: { id: newCategory.id } });
             await Categories.update({ title, parent_id, slug }, { where: { id: newCategory.id } });
 
             // update all subcategories
             const subCategories = await Categories.findAll({
-                where: { parent_id: newCategory.id,  },
+                where: { parent_id: newCategory.id, },
                 paranoid: false
             });
             if (subCategories.length > 0) {
@@ -75,10 +75,10 @@ const addCategory = async (req, res) => {
             }
 
             // update productCategories table with new category to restore all categories
-            const productCategories = await ProductCategories.findAll({ 
+            const productCategories = await ProductCategories.findAll({
                 where: { category_id: newCategory.id },
                 paranoid: false
-             });
+            });
             if (productCategories.length > 0) {
                 productCategories.forEach(async (productCategory) => {
                     await ProductCategories.restore({ where: { id: productCategory.id } });
@@ -101,26 +101,32 @@ const updateCategory = async (req, res) => {
 
         if (!id || !title || !parent_id) {
             return APIResponseFormat._ResMissingRequiredField(res, "All fields");
+        }
+        if (isNaN(parent_id)) return APIResponseFormat._ResMissingRequiredField(res, "parent_id must be a number")
+
+        if (parent_id === "0") {
+            parent_id = null;
         } else {
-            const findCategory = await Categories.findOne({
+            const parentCategory = await Categories.findOne({ where: { id: parent_id } });
+            if (!parentCategory) return APIResponseFormat._ResDataNotExists(res, "Parent category not found");
+        }
+        const findCategory = await Categories.findOne({
+            where: {
+                id: id
+            }
+        });
+        if (!findCategory) {
+            return APIResponseFormat._ResDataNotExists(res, "Category not found");
+        } else {
+            const updateCategory = await Categories.update({
+                title,
+                parent_id
+            }, {
                 where: {
                     id: id
                 }
             });
-
-            if (!findCategory) {
-                return APIResponseFormat._ResDataNotExists(res, "Category not found");
-            } else {
-                const updateCategory = await Categories.update({
-                    title,
-                    parent_id
-                }, {
-                    where: {
-                        id: id
-                    }
-                });
-                return APIResponseFormat._ResDataUpdated(res, updateCategory);
-            }
+            return APIResponseFormat._ResDataUpdated(res, updateCategory);
         }
     } catch (err) {
         return APIResponseFormat._ResServerError(res, err);
@@ -194,14 +200,14 @@ const inactiveCategory = async (req, res) => {
         // inactive category
         const inactiveCategory = await Categories.update({
             is_active: false
-        },{
+        }, {
             where: {
                 id: category_id
-        }
+            }
         });
-        if(inactiveCategory){
+        if (inactiveCategory) {
             return APIResponseFormat._ResDataUpdated(res, inactiveCategory);
-        }else{
+        } else {
             return APIResponseFormat._ResDataNotExists(res, "Category not found");
         }
     } catch (err) {
