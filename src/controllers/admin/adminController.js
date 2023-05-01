@@ -223,12 +223,12 @@ const getCustomerAllOrdersById = async (req, res) => {
                                     as: 'product'
                                 }
                             ]
-                        } ,
+                        },
                         {
                             model: paymentStatusMasters,
                             as: 'payment_status_masters',
                             attributes: ['id', 'title']
-                        } ,{
+                        }, {
                             model: orderStatusMasters,
                             as: 'order_status_masters',
                             attributes: ['id', 'title']
