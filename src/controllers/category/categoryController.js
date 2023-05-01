@@ -42,7 +42,6 @@ const addCategory = async (req, res) => {
             const parentCategory = await Categories.findOne({ where: { id: parent_id } });
             if (!parentCategory) return APIResponseFormat._ResDataNotExists(res, "Parent category not found");
         }
-        return APIResponseFormat._ResDataCreated(res, { title, parent_id, slug });
 
         // check if category already exists
         const category = await Categories.findOne({ where: { title } });
