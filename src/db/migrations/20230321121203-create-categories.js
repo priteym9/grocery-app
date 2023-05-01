@@ -15,7 +15,6 @@ module.exports = {
         title: {
           type: Sequelize.STRING,
           allowNull: false,
-          unique: true,
         },
         parent_id: {
           type: Sequelize.INTEGER,

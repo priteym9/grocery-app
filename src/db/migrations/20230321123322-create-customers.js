@@ -20,7 +20,6 @@ module.exports = {
       primary_mobile_number: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           len: 10
         }
@@ -28,7 +27,6 @@ module.exports = {
       primary_email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           isEmail: true
         }
@@ -36,7 +34,6 @@ module.exports = {
       username: {
         type: Sequelize.STRING(64),
         allowNull: false,
-        unique: true
       },
       password: {
         type: Sequelize.TEXT,

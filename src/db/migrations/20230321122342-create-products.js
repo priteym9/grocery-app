@@ -12,7 +12,6 @@ module.exports = {
       title: {
         type: Sequelize.STRING(512),
         allowNull: false,
-        unique: true,
       },
       amount: {
         type: Sequelize.FLOAT,
