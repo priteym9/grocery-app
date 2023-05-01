@@ -101,4 +101,5 @@ db.order_items.belongsTo(db.orders, { as: 'order', foreignKey: 'order_id' });
 db.products.hasMany(db.order_items, { as: 'order_items', foreignKey: 'product_id' });
 db.order_items.belongsTo(db.products, { as: 'product', foreignKey: 'product_id' });
 
+
 module.exports = db;

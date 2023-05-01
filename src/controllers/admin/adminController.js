@@ -95,7 +95,14 @@ const getAdminDetails = async (req, res) => {
 
 const getAllCustomers = async (req, res) => {
     try {
-        const customers = await Customer.findAll();
+        const customers = await Customer.findAll({
+            include: [
+                {
+                    model: Address,
+                    as: 'addresses',
+                }
+            ]
+        });
         return APIResponseFormat._ResDataFound(res, customers)
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error)
@@ -215,6 +222,9 @@ const getCustomerAllOrdersById = async (req, res) => {
                                     as: 'product'
                                 }
                             ]
+                        } ,{
+                            model: Address,
+                            as: 'billing_address'
                         }
                     ]
                 }
