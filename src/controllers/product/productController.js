@@ -121,6 +121,18 @@ const addProduct = async (req, res) => {
       }
     });
 
+    // check if exists or not
+    const productExists = await Product.findOne({
+      where: {
+        title: title,
+      },
+    });
+
+    if (productExists) {
+      return APIResponseFormat._ResDataNotExists(res , "Product already exists");
+    }
+
+
     // create a product
     const product = await Product.create({
       title: title,
