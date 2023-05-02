@@ -103,11 +103,7 @@ const getOrderById = async (req, res) => {
                 }
             ]
         });
-        if (order) {
-            return APIResponseFormat._ResDataFound(res, order);
-        } else {
-            return APIResponseFormat._ResDataNotFound(res, "Order not found");
-        }
+        return APIResponseFormat._ResDataFound(res, order);
     } catch (error) {
         return APIResponseFormat._ResServerError(res, error);
     }
