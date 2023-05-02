@@ -373,7 +373,22 @@ const updateProduct = async (req, res) => {
 // get all products
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.findAll({
+      include: [
+        {
+          model: ProductCategory,
+          as: "categoryArrayFromBody",
+          attributes: ["category_id"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              // attributes: ["id", "name"],
+            },
+          ],
+        },
+      ],
+    });
     if (products.length > 0) {
       return APIResponseFormat._ResDataFound(res, products);
     } else {
