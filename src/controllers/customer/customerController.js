@@ -255,7 +255,8 @@ const login = async (req, res) => {
                         user: {
                             first_name: findCustomer.first_name,
                             last_name: findCustomer.last_name,
-                            username: findCustomer.username
+                            username: findCustomer.username ,
+                            is_active : findCustomer.is_active
                         },
                         token: token
                     });
